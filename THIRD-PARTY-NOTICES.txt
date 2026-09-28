@@ -1,0 +1,87 @@
+音乐机重生 / Music Player Reborn — 致谢与第三方声明
+
+项目发布与维护：niumadadi520
+
+一、来源记录：区分历史实现与当前实现
+
+本节不是“当前直接采用四个模组代码”的清单，也不是依赖列表。
+以下关系根据项目已有来源记录、重构记录以及本次对两份发行源码的核对填写；没有证据的贡献不补写为已采用。
+代码曾经存在、当前仍有同名类、当前直接复制代码，是不同事实，不能相互替代。
+
+1. NetMusic / Net Music Mod — 基础工程的历史来源
+上游作者列表：TartaricAcid、IMG、郝南村、琥珀酸、帕金伊、SQwatermark 及贡献者。
+历史范围：早期工程中的音乐流播放、歌曲数据、网络访问和渲染实现存在修改或共同来源记录。
+当前范围：InitModel、NetMusicSound、NetWorker、NetMusicAudioStream 等入口仍存在，但其内容经过修改；仅凭同名不将整个文件归为上游原作。
+已移除的旧实现包括 EncryptUtils、ModelMusicPlayer、NetEaseMusicSong、ExtraMusicList、LyricRecord、NetEaseMusicList；不再将这些旧类列为当前发行内容。
+保留声明：BSD 3-Clause，Copyright (c) 2026, TartaricAcid and contributors.
+全文：src/main/resources/LICENSE-NETMUSIC-BSD-3-CLAUSE.txt。
+上游的资源许可信息不等于当前全部模型、贴图来自该项目。本次对照所提供源码包，未发现当前 Java、PNG、OGG、JSON 与该包对应 src/main 文件逐字节相同；这不排除修改后的来源关系。
+
+2. netMusicListForge — 已替换实现的历史来源
+上游作者列表：gly091020、N44、Wangrenze9788、IMG。
+历史范围：旧缓存、歌单辅助、暂停控制及默认封面曾有来源记录。
+当前范围：PauseSoundManager、URLType、MP3Pack、CacheManagerScreen、GamePauseMixin、PatchouliOpener、SoundPausedMixin、NetMusicListKeyMapping、PlayModeMixin、MusicListLayer、NetMusicListUtil、CacheManager 均不在当前生产 Java 源码中；旧默认封面也已替换。
+当前缓存采用 MusicAssetCache、CacheIndexStore、CacheTransfer 等实现；旧存储名称或数据格式的兼容，不单独作为复制其代码的证据。
+本项目不把上述已删除实现或旧封面列为当前采用内容，也不把当前整个歌单模块归功于该项目。
+保留声明：历史 MIT 文本，Copyright (c) 2025 gly091020.
+全文：src/main/resources/LICENSE-NETMUSICLISTFORGE-MIT.txt。保留历史许可文本不表示旧实现仍在分发。
+
+3. NetMusic-BetterLogin — 旧登录路径的历史参考
+版权持有人：IMG，Copyright (c) 2026 IMG.
+历史范围：项目已有记录将它列为登录实现的参考，并记载旧登录路径已移除。
+当前范围：LoginScreen、LoginSuccessScreen、BetterNetWorker、QRCodeImage 等旧类不存在。本次核对没有确认当前仍直接采用该项目的哪一段专属实现，因此不将它列为当前扫码登录功能的代码提供者。
+保留声明：历史 MIT 文本，src/main/resources/LICENSE-BETTERLOGIN-MIT.txt；不作为当前直接使用其代码的证明。
+
+4. NetMusicCanNeedQQ — QQ 功能的历史参考，当前归属不作扩大认定
+上游作者列表：Yincmewy、Yingyya、sisi0318。
+历史范围：早期 QQ 相关类曾有高相似实现记录，开发过程中接触过该项目源码。
+当前范围：QQ 授权、接口请求、歌曲解析、歌词和会话存储已重构；主要实现位于 api/qq/，包括 QqAuthorizationFlow、QqCatalog 等。部分 QqCredential、QqLoginService 等名称仍保留，名称相同不等于当前方法仍是原实现。
+本次未发现逐字节相同的上述类型文件，但没有据此认定所有修改后代码的来源关系均已消失，也不将现有整个 QQ 模块标注为该项目原作。
+提供的参考包标注 All Rights Reserved，未附开放源码许可；目前未取得额外作者授权。这里记录历史与核对局限，不认定当前哪一段必须另行授权，也不以致谢代替可能需要的授权。
+
+二、本项目代码和美术
+
+本项目代码按 LICENSE-CODE-BSD-3-CLAUSE.txt 中的 BSD 3-Clause 声明提供，适用范围以权利人有权许可的内容为限，不覆盖或替代第三方权利。
+模型、贴图等项目资源按 LICENSE-ASSETS-CC-BY-NC-SA-4.0.txt 中的声明提供；第三方素材及明确列出的例外适用其原有条款。
+历史项目贡献包含 MengSama0502；模型贡献包含 niumadadi520，历史 UI 美术贡献包含 YuZiJiang。部分新界面素材和创造标签图标使用生成式工具辅助制作。
+README 的作者栏表示当前项目发布与维护者，不替代上述贡献及版权记录。
+
+三、打包或构建使用的第三方组件
+
+ZXing Core 3.5.4：ZXing authors，Apache License 2.0。
+项目：https://github.com/zxing/zxing
+许可：https://www.apache.org/licenses/LICENSE-2.0
+
+MP3SPI 1.9.5.4、JLayer 1.0.1.4、tritonus-share 0.3.7.4：分别来自 JavaZoom / soundlibs 和 Tritonus 音频组件，适用其原始许可，不适用本项目的统一代码声明。
+来源：http://www.javazoom.net/mp3spi/mp3spi.html
+来源：http://www.javazoom.net/javalayer/sources.html
+来源：http://tritonus.org/
+
+jflac-codec 1.5.3-SNAPSHOT、javasound-aac 0.9.6：本项目随源码提供的本地音频库。
+现有本地构件未附完整许可文件，来源和适用许可仍需核实；本声明不为这些库补充或授予许可。
+
+Gradle Wrapper 保留自身版权及许可声明。GeckoLib 和各可选联动模组由各自作者维护，适用各自许可；将其列为依赖或联动对象不表示其作者认可或参与本项目。
+
+
+实际用途与分发方式：
+- ZXing：NetEaseQrLoginScreen 使用 QRCodeWriter 将网易云登录链接生成二维码；代码随完整模组 JAR 打包。
+- MP3SPI / JLayer / tritonus-share：为 Java Sound 提供 MP3 读取、解码及音频格式支持；随完整模组 JAR 打包。
+- jflac-codec / javasound-aac：FLAC / AAC 格式支持，本地 JAR 随源码提供并打入完整模组；许可资料的待核实状态如上。
+- GeckoLib：模型、骨骼动画与渲染的实际运行依赖，需单独安装；Forge 分支构建使用 4.2.4，NeoForge 分支使用 4.6.6。
+- Simple Voice Chat：K 歌语音 API 联动；源码 libs 内附 voicechat-api-2.6.20.jar 供编译使用，不表示模组 JAR 内置完整语音聊天模组。
+- Gradle Wrapper：构建工具；JUnit 和测试用 ASM 用于验证，不属于提供给玩家的音乐功能代码来源。
+
+四、可选联动对象（不是本项目代码作者名单）
+
+Sophisticated Backpacks / Sophisticated Core：背包随身听插件、挂件和打开播放器入口。
+Curios：耳机饰品槽支持。
+Simple Voice Chat：麦克风与音响的语音传输。
+Touhou Little Maid：女仆相关设备和歌词联动。
+Jade：设备信息提示。
+Cloth Config：配置界面。
+这些条目表示对 API 的接入或运行时兼容，不宣称复制了相应模组的内部实现，也不表示维护者参与了本项目制作。
+
+五、服务与商标
+
+Minecraft、QQ 音乐、网易云音乐等名称及商标属于其各自权利人。本项目不是这些服务的官方产品，也未声称获得其背书。
+音乐及专辑封面的使用权限由相应平台与权利人决定；模组不授予音乐版权或付费内容权限。

@@ -1,0 +1,314 @@
+buildscript {
+    repositories {
+        maven { url = 'https://maven.aliyun.com/repository/public' }
+        maven { url = 'https://maven.aliyun.com/repository/gradle-plugin' }
+        maven { url = 'https://mirrors.cloud.tencent.com/nexus/repository/maven-public/' }
+        maven { url = 'https://maven.minecraftforge.net' }
+        maven { url = 'https://maven.parchmentmc.org' }
+        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+        mavenCentral()
+        gradlePluginPortal()
+    }
+    dependencies {
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '[6.0.16,6.2)', changing: true
+        classpath 'org.parchmentmc:librarian:1.+'
+        classpath 'gradle.plugin.com.github.johnrengelman:shadow:7.1.2'
+        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
+    }
+}
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'org.parchmentmc.librarian.forgegradle'
+apply plugin: 'org.spongepowered.mixin'
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'eclipse'
+
+version = '1.0.0-forge+mc1.20.1'
+group = 'com.mengsama.mod'
+archivesBaseName = 'MengSamaNetMusic'
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+minecraft {
+    mappings channel: 'official', version: '1.20.1'
+    runs {
+        client {
+            jvmArgs = [
+                "-XX:+IgnoreUnrecognizedVMOptions",
+                "-XX:+AllowEnhancedClassRedefinition"
+            ]
+            workingDirectory project.file('run/client')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            property 'fml.earlyprogresswindow', 'false'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            mods {
+                mengsamanetmusic {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        releaseClient {
+            parent runs.client
+            workingDirectory project.file('run/releaseClient')
+            mods {
+                mengsamanetmusic {
+                    sources.clear()
+                }
+            }
+        }
+
+        server {
+            jvmArgs "-XX:+AllowEnhancedClassRedefinition"
+            workingDirectory project.file('run/server')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            property 'forge.enabledGameTestNamespaces', 'mengsamanetmusic'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            mods {
+                mengsamanetmusic {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        data {
+            workingDirectory project.file('run/data')
+            args '--mod', 'mengsamanetmusic', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+        }
+    }
+}
+
+mixin {
+    add sourceSets.main, 'mengsamanetmusic.refmap.json'
+    config 'mengsamanetmusic.mixins.json'
+}
+
+repositories {
+    maven { url = 'https://maven.theillusivec4.top/'; content { includeGroup 'top.theillusivec4.curios' } }
+    flatDir {
+        dir "libs"
+    }
+    maven { url = 'https://maven.aliyun.com/repository/public' }
+    maven { url = 'https://mirrors.cloud.tencent.com/nexus/repository/maven-public/' }
+    maven {
+        name = "Jared's maven"
+        url = "https://maven.blamejared.com/"
+        content {
+            includeGroup "mezz.jei"
+            includeGroup "vazkii.patchouli"
+        }
+    }
+    maven {
+        name = "ModMaven"
+        url = "https://modmaven.dev"
+        content {
+            includeGroup "mezz.jei"
+            includeGroup "vazkii.patchouli"
+        }
+    }
+    maven {
+        name = "Curse Maven"
+        url = "https://www.cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
+    maven {
+        url "https://maven.shedaniel.me/"
+        content {
+            includeGroup "me.shedaniel.cloth"
+        }
+    }
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+        content {
+            includeGroup "maven.modrinth"
+        }
+    }
+    maven {
+        name = "GeckoLib"
+        url = "https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/"
+    }
+}
+
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.20.1-47.4.22'
+    compileOnly files('libs/voicechat-api-2.6.20.jar')
+    testCompileOnly files('libs/voicechat-api-2.6.20.jar')
+    testRuntimeOnly files('libs/voicechat-api-2.6.20.jar')
+
+    minecraftLibrary 'com.googlecode.soundlibs:mp3spi:1.9.5.4'
+    minecraftLibrary 'libs:javasound-aac:0.9.6'
+    minecraftLibrary 'libs:jflac-codec-1.5.3:SNAPSHOT'
+
+    implementation fg.deobf("me.shedaniel.cloth:cloth-config-forge:11.1.106")
+
+
+    implementation fg.deobf("maven.modrinth:sophisticated-core:1.20.1-1.3.2.1468")
+    implementation fg.deobf("maven.modrinth:sophisticated-backpacks:1.20.1-3.24.21.1515")
+
+    compileOnly fg.deobf("maven.modrinth:touhou-little-maid:1.5.3-forge+mc1.20.1")
+    runtimeOnly fg.deobf("maven.modrinth:touhou-little-maid:1.5.3-forge+mc1.20.1")
+    testRuntimeOnly fg.deobf("maven.modrinth:touhou-little-maid:1.5.3-forge+mc1.20.1")
+
+    implementation 'com.google.zxing:core:3.5.4'
+
+    runtimeOnly fg.deobf("mezz.jei:jei-1.20.1-forge:15.20.0.106")
+
+     
+    compileOnly fg.deobf("maven.modrinth:jade:11.12.3+forge")
+    testImplementation fg.deobf("maven.modrinth:jade:11.12.3+forge")
+    compileOnly fg.deobf('top.theillusivec4.curios:curios-forge:5.14.1+1.20.1:api')
+
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+
+    implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.20.1:4.2.4')
+
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.ow2.asm:asm:9.7.1'
+}
+
+def productionSrgJar = new File(gradle.gradleUserHomeDir,
+        'caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.22/forge-1.20.1-47.4.22-srg.jar')
+
+tasks.named('test').configure {
+    dependsOn tasks.named('reobfShadowJar')
+    useJUnitPlatform()
+    systemProperty 'mengsama.liveTests', providers.gradleProperty('mengsamaLiveTests').getOrElse('false')
+    systemProperty 'mengsama.releaseJar', layout.buildDirectory.file('reobfShadowJar/output.jar').get().asFile.absolutePath
+    doFirst {
+        if (!productionSrgJar.isFile()) {
+            throw new GradleException("ForgeGradle production SRG JAR is missing: ${productionSrgJar}")
+        }
+        systemProperty 'mengsama.productionSrgJar', productionSrgJar.absolutePath
+         
+        def geckoJar = classpath.files.find { it.name.startsWith('geckolib-forge-1.20.1-') && it.name.endsWith('.jar') }
+        if (geckoJar == null) throw new GradleException('GeckoLib test runtime is missing')
+        def geckoTestLibraries = layout.buildDirectory.dir('tmp/geckolib-test-libraries').get().asFile
+        copy { from zipTree(geckoJar); include 'META-INF/jarjar/*.jar'; into geckoTestLibraries }
+        classpath += fileTree(geckoTestLibraries) { include '**/*.jar' }
+         
+         
+        if (System.getProperty('os.name').startsWith('Windows') && classpath.files.any { it.path.any { ch -> (int) ch > 127 } }) {
+            def stage = new File(System.getProperty('java.io.tmpdir'), 'mengsama-test-' + UUID.randomUUID())
+            int entry = 0
+            classpath = files(classpath.files.collect { original ->
+                if (original.path.every { ch -> (int) ch < 128 }) return original
+                def destination = new File(stage, 'entry-' + entry++)
+                copy { from original; into destination }
+                return original.isDirectory() ? destination : new File(destination, original.name)
+            })
+        }
+    }
+}
+
+tasks.register('prepareReleaseClient', Copy) {
+    from(layout.buildDirectory.file('reobfShadowJar/output.jar'))
+    into(layout.projectDirectory.dir('run/releaseClient/mods'))
+    rename { 'MengSamaNetMusic-release-test.jar' }
+}
+
+tasks.matching { it.name == 'runReleaseClient' }.configureEach {
+    dependsOn tasks.named('prepareReleaseClient')
+    doFirst {
+        def reobfuscatedJar = layout.projectDirectory.file('run/releaseClient/mods/MengSamaNetMusic-release-test.jar').asFile
+        if (!reobfuscatedJar.isFile()) {
+            throw new GradleException("Run clean build before runReleaseClient; missing ${reobfuscatedJar}")
+        }
+    }
+}
+
+tasks.register('copyReleaseJar') {
+    def sourceJar = layout.buildDirectory.file('reobfShadowJar/output.jar')
+    def releaseJar = layout.buildDirectory.file('libs/MengSamaNetMusic-1.20.1-forge.jar').get()
+    dependsOn tasks.named('reobfShadowJar')
+    inputs.file(sourceJar)
+    outputs.file(releaseJar)
+    doLast {
+        java.nio.file.Files.copy(sourceJar.get().asFile.toPath(), releaseJar.asFile.toPath(),
+                java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+    }
+}
+
+tasks.named('build').configure {
+    finalizedBy tasks.named('copyReleaseJar')
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+def generatedMixinRefmap = layout.buildDirectory.file('tmp/compileJava/compileJava-refmap.json')
+
+tasks.named('compileJava', JavaCompile).configure {
+     
+    outputs.file(generatedMixinRefmap)
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    var replaceProperties = [mod_version: version]
+    inputs.properties replaceProperties
+    filesMatching(['META-INF/mods.toml']) {
+        expand replaceProperties + [project: project]
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+shadowJar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from(generatedMixinRefmap) {
+        rename { 'mengsamanetmusic.refmap.json' }
+    }
+
+    dependencies {
+        include(dependency("com.googlecode.soundlibs:mp3spi:1.9.5.4"))
+        include(dependency("com.googlecode.soundlibs:jlayer:1.0.1.4"))
+        include(dependency("com.googlecode.soundlibs:tritonus-share:0.3.7.4"))
+        include(dependency("libs:jflac-codec-1.5.3:SNAPSHOT"))
+        include(dependency("libs:javasound-aac:0.9.6"))
+        include(dependency("com.google.zxing:core:3.5.4"))
+    }
+
+    relocate 'javazoom.jl', 'com.mengsama.mod.mengsamanetmusic.libs.javazoom.jl'
+    relocate 'javazoom.spi', 'com.mengsama.mod.mengsamanetmusic.libs.javazoom.spi'
+    relocate 'org.tritonus', 'com.mengsama.mod.mengsamanetmusic.libs.org.tritonus'
+    relocate 'org.jflac', 'com.mengsama.mod.mengsamanetmusic.libs.org.jflac'
+    relocate 'net.sourceforge.jaad', 'com.mengsama.mod.mengsamanetmusic.libs.net.sourceforge.jaad'
+    relocate 'com.google.zxing', 'com.mengsama.mod.mengsamanetmusic.libs.zxing'
+
+    exclude 'META-INF/maven/**/*'
+    exclude 'META-INF/versions/**/*'
+    exclude 'META-INF/LICENSE'
+
+    mergeServiceFiles()
+}
+
+reobf {
+    shadowJar {}
+}
+
+task shadowJarPublish(type: Jar) {
+    dependsOn reobfShadowJar
+    archiveClassifier = "all"
+    from zipTree("${project.projectDir}/build/reobfShadowJar/output.jar")
+}
+
+assemble.dependsOn shadowJar
+tasks.build.dependsOn shadowJarPublish
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest {
+        attributes([
+            "Implementation-Title"  : project.name,
+            "Implementation-Version": "${version}"
+        ])
+    }
+}
