@@ -13,9 +13,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import com.mengsama.mod.mengsamanetmusic.platform.PacketContext;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -114,7 +114,7 @@ public record PlayerPlayMusicPacket(int playerID, String targetId, String url, i
         return headers;
     }
 
-    public static void handle(PlayerPlayMusicPacket packet, Supplier<NetworkEvent.Context> ctx) {
+    public static void handle(PlayerPlayMusicPacket packet, Supplier<PacketContext> ctx) {
         ClientPacketDispatch.accept(ctx, () -> {
             com.mengsama.mod.mengsamanetmusic.earbuds.client.EarbudClient.forget(packet.targetId);
             handleClient(packet);

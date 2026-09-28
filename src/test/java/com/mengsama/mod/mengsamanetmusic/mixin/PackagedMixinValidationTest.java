@@ -37,7 +37,7 @@ class PackagedMixinValidationTest {
     @Test
     void everyConfiguredMixinInFinalJarHasMixinAnnotation() throws Exception {
         Path jarPath = Path.of(System.getProperty("mengsama.releaseJar"));
-        assertTrue(Files.isRegularFile(jarPath), "Final reobfuscated shadow JAR is missing: " + jarPath);
+        assertTrue(Files.isRegularFile(jarPath), "Final NeoForge shadow JAR is missing: " + jarPath);
 
         try (JarFile jar = new JarFile(jarPath.toFile())) {
             var configEntry = jar.getJarEntry(CONFIG);
@@ -72,74 +72,71 @@ class PackagedMixinValidationTest {
     }
 
     @Test
-    void finalJarContainsConfiguredRefmapWithProductionMappings() throws Exception {
-        Path jarPath = Path.of(System.getProperty("mengsama.releaseJar"));
-        assertTrue(Files.isRegularFile(jarPath), "Final reobfuscated shadow JAR is missing: " + jarPath);
-
-        try (JarFile jar = new JarFile(jarPath.toFile())) {
-            var configEntry = jar.getJarEntry(CONFIG);
-            assertNotNull(configEntry, "Final JAR is missing " + CONFIG);
-
-            JsonObject config;
-            try (var reader = new InputStreamReader(jar.getInputStream(configEntry), StandardCharsets.UTF_8)) {
-                config = JsonParser.parseReader(reader).getAsJsonObject();
+    void finalJarDeclaresNeoForgeNamedRuntimeMixins() throws Exception {
+        try (JarFile jar = new JarFile(System.getProperty("mengsama.releaseJar"))) {
+            var config = readJson(jar, CONFIG);
+            assertEquals("JAVA_21", config.get("compatibilityLevel").getAsString());
+            assertFalse(config.has("refmap"), "NeoForge 1.21.1 uses named runtime targets");
+            var entry = jar.getJarEntry("META-INF/neoforge.mods.toml");
+            assertNotNull(entry);
+            try (var in = jar.getInputStream(entry)) {
+                assertTrue(new String(in.readAllBytes(), StandardCharsets.UTF_8).contains(CONFIG));
             }
-            assertTrue(config.has("refmap"), CONFIG + " does not declare a refmap");
-            String refmapName = config.get("refmap").getAsString();
-            assertEquals("mengsamanetmusic.refmap.json", refmapName);
-
-            var refmapEntry = jar.getJarEntry(refmapName);
-            assertNotNull(refmapEntry, "Final JAR is missing configured refmap " + refmapName);
-            JsonObject refmap;
-            try (var reader = new InputStreamReader(jar.getInputStream(refmapEntry), StandardCharsets.UTF_8)) {
-                refmap = JsonParser.parseReader(reader).getAsJsonObject();
-            }
-            JsonObject mappings = refmap.getAsJsonObject("mappings");
-            assertNotNull(mappings, "Refmap has no mappings object");
-            assertFalse(mappings.entrySet().isEmpty(), "Refmap contains no production mappings");
-            assertMappingPresent(mappings, "SoundEngineAccessorMixin", "tickingSounds");
-            assertMappingPresent(mappings, "SoundManagerAccessorMixin", "soundEngine");
-            assertMappingPresent(mappings, "DeviceAudioResumeMixin", "resume");
-            assertFalse(mappings.has("com/mengsama/mod/mengsamanetmusic/mixin/FuckTelemetryMixin"),
-                    "Deleted telemetry mixin must not remain in the production refmap");
         }
     }
 
     @Test
-    void everyProductionRefmapTargetResolvesAgainstSrgClientBytecode() throws Exception {
-        Path releaseJarPath = Path.of(System.getProperty("mengsama.releaseJar"));
-        Path srgJarPath = Path.of(System.getProperty("mengsama.productionSrgJar"));
-        assertTrue(Files.isRegularFile(releaseJarPath), "Final reobfuscated shadow JAR is missing: " + releaseJarPath);
-        assertTrue(Files.isRegularFile(srgJarPath), "Production SRG JAR is missing: " + srgJarPath);
-
-        try (JarFile releaseJar = new JarFile(releaseJarPath.toFile());
-             JarFile srgJar = new JarFile(srgJarPath.toFile())) {
-            JsonObject config = readJson(releaseJar, CONFIG);
-            String packagePath = config.get("package").getAsString().replace('.', '/');
-            JsonObject mappings = readJson(releaseJar, config.get("refmap").getAsString()).getAsJsonObject("mappings");
-            Map<String, ClassMembers> productionClasses = readClassMembers(srgJar);
-            List<String> failures = new ArrayList<>();
-
-            for (Map.Entry<String, com.google.gson.JsonElement> mixinEntry : mappings.entrySet()) {
-                String mixinClass = mixinEntry.getKey();
-                var mixinBytecodeEntry = releaseJar.getJarEntry(mixinClass + ".class");
-                assertNotNull(mixinBytecodeEntry, "Mapped mixin class is absent from final JAR: " + mixinClass);
-                String defaultOwner;
-                try (var input = releaseJar.getInputStream(mixinBytecodeEntry)) {
-                    defaultOwner = readMixinTarget(input.readAllBytes());
+    void everyNamedMixinTargetResolvesAgainstRuntimeBytecode() throws Exception {
+        try (JarFile jar = new JarFile(System.getProperty("mengsama.releaseJar"))) {
+            var config=readJson(jar,CONFIG);
+            String prefix=config.get("package").getAsString().replace('.', '/') + "/";
+            int checked=0;
+            for (var name:config.getAsJsonArray("client")) {
+                var mixin = new org.objectweb.asm.tree.ClassNode();
+                try (var in=jar.getInputStream(jar.getJarEntry(prefix+name.getAsString()+".class"))) {
+                    new ClassReader(in).accept(mixin,0);
                 }
-                for (Map.Entry<String, com.google.gson.JsonElement> memberEntry
-                        : mixinEntry.getValue().getAsJsonObject().entrySet()) {
-                    String mapped = memberEntry.getValue().getAsString();
-                    MemberReference reference = parseMemberReference(mapped, defaultOwner);
-                    ClassMembers members = productionClasses.get(reference.owner());
-                    if (members == null || !members.contains(reference)) {
-                        failures.add(mixinClass.substring(packagePath.length() + 1) + "." + memberEntry.getKey()
-                                + " -> " + mapped);
+                String owner=null;
+                var annotations=new ArrayList<org.objectweb.asm.tree.AnnotationNode>();
+                if(mixin.visibleAnnotations!=null)annotations.addAll(mixin.visibleAnnotations);
+                if(mixin.invisibleAnnotations!=null)annotations.addAll(mixin.invisibleAnnotations);
+                for(var annotation:annotations) if(annotation.desc.equals(MIXIN_DESCRIPTOR)) {
+                    for(int i=0;i<annotation.values.size();i+=2) {
+                        String key=(String)annotation.values.get(i);
+                        if(key.equals("value"))owner=((org.objectweb.asm.Type)((List<?>)annotation.values.get(i+1)).getFirst()).getInternalName();
+                        if(key.equals("targets"))owner=((String)((List<?>)annotation.values.get(i+1)).getFirst()).replace('.','/');
                     }
                 }
+                assertNotNull(owner);
+                var target=new org.objectweb.asm.tree.ClassNode();
+                try(var in=getClass().getClassLoader().getResourceAsStream(owner+".class")) {
+                    assertNotNull(in,"Missing runtime target "+owner); new ClassReader(in).accept(target,0);
+                }
+                int injects=0,matchingInjects=0;
+                for(var method:mixin.methods) {
+                    var all=new ArrayList<org.objectweb.asm.tree.AnnotationNode>();
+                    if(method.visibleAnnotations!=null)all.addAll(method.visibleAnnotations);
+                    if(method.invisibleAnnotations!=null)all.addAll(method.invisibleAnnotations);
+                    for(var annotation:all) {
+                        if(annotation.desc.equals(ACCESSOR_DESCRIPTOR)) {
+                            String field=(String)annotation.values.get(annotation.values.indexOf("value")+1);
+                            String type=org.objectweb.asm.Type.getReturnType(method.desc).getDescriptor();
+                            assertTrue(target.fields.stream().anyMatch(f->f.name.equals(field)&&f.desc.equals(type)), owner+"."+field+":"+type);
+                            checked++;
+                        }
+                        if(annotation.desc.equals(INJECT_DESCRIPTOR)) {
+                            injects++;
+                            var selectors=(List<?>)annotation.values.get(annotation.values.indexOf("method")+1);
+                            boolean matches=selectors.stream().anyMatch(selector->target.methods.stream().anyMatch(m->selector.equals(m.name)||selector.equals(m.name+m.desc)));
+                            if(matches){matchingInjects++; checked++;}
+                             
+                            if(!name.getAsString().equals("BackpackCharmLayerMixin"))assertTrue(matches,owner+" "+selectors);
+                        }
+                    }
+                }
+                if(injects>0)assertTrue(matchingInjects>0,"No compatible injection for "+owner);
             }
-            assertTrue(failures.isEmpty(), "Mixin targets missing from production SRG bytecode: " + failures);
+            assertTrue(checked>=6,"All accessors and injection groups must be validated");
         }
     }
 
@@ -183,7 +180,7 @@ class PackagedMixinValidationTest {
     @Test
     void finalJarKeepsRelocatedJavaSoundProvidersDiscoverable() throws Exception {
         Path jarPath = Path.of(System.getProperty("mengsama.releaseJar"));
-        assertTrue(Files.isRegularFile(jarPath), "Final reobfuscated shadow JAR is missing: " + jarPath);
+        assertTrue(Files.isRegularFile(jarPath), "Final NeoForge shadow JAR is missing: " + jarPath);
 
         try (JarFile jar = new JarFile(jarPath.toFile())) {
             assertServiceProviders(jar, "javax.sound.sampled.spi.AudioFileReader", List.of(

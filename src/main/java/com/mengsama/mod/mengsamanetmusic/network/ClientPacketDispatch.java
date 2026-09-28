@@ -1,13 +1,13 @@
 package com.mengsama.mod.mengsamanetmusic.network;
 import java.util.function.Supplier;
-import net.minecraftforge.network.NetworkDirection;
-import net.minecraftforge.network.NetworkEvent;
+import com.mengsama.mod.mengsamanetmusic.platform.PayloadChannel.Direction;
+import com.mengsama.mod.mengsamanetmusic.platform.PacketContext;
 
  
 public final class ClientPacketDispatch {
-    public static void accept(Supplier<NetworkEvent.Context> supplier, Runnable action) {
+    public static void accept(Supplier<PacketContext> supplier, Runnable action) {
         var delivery = supplier.get();
-        delivery.setPacketHandled(true);
-        if (delivery.getDirection() == NetworkDirection.PLAY_TO_CLIENT) delivery.enqueueWork(action);
+        
+        if (delivery.getDirection() == Direction.PLAY_TO_CLIENT) delivery.enqueueWork(action);
     }
 }

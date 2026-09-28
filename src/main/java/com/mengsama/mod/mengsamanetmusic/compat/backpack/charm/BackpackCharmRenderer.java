@@ -8,7 +8,8 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.event.TickEvent;
+import net.neoforged.neoforge.event.tick.*;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import org.slf4j.Logger;
 
 import java.util.Iterator;
@@ -63,7 +64,7 @@ public final class BackpackCharmRenderer {
             tracked.initialized = true;
         }
         Minecraft minecraft = Minecraft.getInstance();
-        CharmDynamics.Pose pose = tracked.dynamics.interpolated(minecraft.isPaused() ? 1.0 : minecraft.getFrameTime());
+        CharmDynamics.Pose pose = tracked.dynamics.interpolated(minecraft.isPaused() ? 1.0 : minecraft.getTimer().getGameTimeDeltaPartialTick(true));
         stack.pushPose();
          
          
@@ -74,9 +75,9 @@ public final class BackpackCharmRenderer {
         stack.popPose();
     }
 
-    public static void clientTick(TickEvent.ClientTickEvent event) {
+    public static void clientTick(ClientTickEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();
-        if (event.phase != TickEvent.Phase.END || minecraft.isPaused()) {
+        if (minecraft.isPaused()) {
             return;
         }
         if (minecraft.level == null || minecraft.level != trackedLevel) {

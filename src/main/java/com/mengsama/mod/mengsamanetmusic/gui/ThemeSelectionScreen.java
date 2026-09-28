@@ -11,7 +11,7 @@ import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 
  
-public final class ThemeSelectionScreen extends Screen {
+public final class ThemeSelectionScreen extends com.mengsama.mod.mengsamanetmusic.gui.ThemedOverlayScreen {
     private final Screen parent;
     private int page;
     private String status="点击主题即可应用并保存";
@@ -47,7 +47,7 @@ public final class ThemeSelectionScreen extends Screen {
         return super.keyPressed(key,scan,modifiers);
     }
     @Override public void render(GuiGraphics g,int mx,int my,float partial){
-        renderBackground(g);ThemeSkin.panel(g,left,top,panelWidth,panelHeight,22);
+        renderTransparentBackground(g);ThemeSkin.panel(g,left,top,panelWidth,panelHeight,22);
         g.drawCenteredString(font,title,left+panelWidth/2,top+11,MenuThemeConfig.get().title);
         g.drawString(font,font.plainSubstrByWidth(status,Math.max(1,panelWidth-18)),left+9,top+panelHeight-37,MusicPlayerSkin.primary(),false);
         super.render(g,mx,my,partial);

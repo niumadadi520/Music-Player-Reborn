@@ -28,6 +28,10 @@ public final class KaraokeBlockRenderer implements BlockEntityRenderer<KaraokeBl
                 new DeviceModel(name, "_medium"), new DeviceModel(name, "_far"));
     }
 
+    @Override public net.minecraft.world.phys.AABB getRenderBoundingBox(KaraokeBlockEntity block) {
+        return new net.minecraft.world.phys.AABB(block.getBlockPos()).expandTowards(0, 1, 0);
+    }
+
     @Override
     public void render(KaraokeBlockEntity block, float partialTick, PoseStack pose,
                        MultiBufferSource buffers, int light, int overlay) {
@@ -41,9 +45,9 @@ public final class KaraokeBlockRenderer implements BlockEntityRenderer<KaraokeBl
         private final ResourceLocation animation;
 
         private DeviceModel(String name, String suffix) {
-            geometry = new ResourceLocation(MengSamaNetMusic.MOD_ID, "geo/" + name + suffix + ".geo.json");
-            texture = new ResourceLocation(MengSamaNetMusic.MOD_ID, "textures/block/" + name + ".png");
-            animation = new ResourceLocation(MengSamaNetMusic.MOD_ID, "animations/" + name + ".animation.json");
+            geometry = ResourceLocation.fromNamespaceAndPath(MengSamaNetMusic.MOD_ID, "geo/" + name + suffix + ".geo.json");
+            texture = ResourceLocation.fromNamespaceAndPath(MengSamaNetMusic.MOD_ID, "textures/block/" + name + ".png");
+            animation = ResourceLocation.fromNamespaceAndPath(MengSamaNetMusic.MOD_ID, "animations/" + name + ".animation.json");
         }
 
         @Override public ResourceLocation getModelResource(KaraokeBlockEntity block) { return geometry; }

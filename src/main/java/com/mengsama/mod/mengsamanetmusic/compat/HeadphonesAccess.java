@@ -3,7 +3,7 @@ package com.mengsama.mod.mengsamanetmusic.compat;
 import com.mengsama.mod.mengsamanetmusic.item.PinkHeadphonesItem;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.fml.ModList;
+import net.neoforged.fml.ModList;
 
 public final class HeadphonesAccess {
     private HeadphonesAccess() {}

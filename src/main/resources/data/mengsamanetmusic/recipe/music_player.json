@@ -1,7 +1,7 @@
 {
   "type": "minecraft:crafting_shaped",
   "result": {
-    "item": "mengsamanetmusic:music_player_block"
+    "id": "mengsamanetmusic:music_player_block"
   },
   "pattern": [
     "  G",
@@ -10,16 +10,16 @@
   ],
   "key": {
     "G": {
-      "tag": "forge:ingots/gold"
+      "tag": "c:ingots/gold"
     },
     "I": {
-      "tag": "forge:ingots/iron"
+      "tag": "c:ingots/iron"
     },
     "N": {
       "item": "minecraft:note_block"
     },
     "C": {
-      "tag": "forge:ingots/copper"
+      "tag": "c:ingots/copper"
     }
   }
 }

@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
  
 public final class MusicInfoHud {
-    private static final ResourceLocation DEFAULT_TEXTURE = new ResourceLocation(MengSamaNetMusic.MOD_ID, "textures/gui/default.png");
+    private static final ResourceLocation DEFAULT_TEXTURE = ResourceLocation.fromNamespaceAndPath(MengSamaNetMusic.MOD_ID, "textures/gui/default.png");
     private static final Map<String, SongInfo> DEVICE_INFO = new LinkedHashMap<>();
     private static final Map<String, ResourceLocation> ARTWORK_TEXTURES = new ConcurrentHashMap<>();
     private static final Map<String, ResourceLocation> URL_TEXTURES = new ConcurrentHashMap<>();
@@ -389,12 +389,12 @@ public final class MusicInfoHud {
 
     private static ResourceLocation textureLocation(String identity) {
         UUID uuid = UUID.nameUUIDFromBytes(identity.getBytes(StandardCharsets.UTF_8));
-        return new ResourceLocation(MengSamaNetMusic.MOD_ID, "hud_cover/" + uuid.toString().replace("-", ""));
+        return ResourceLocation.fromNamespaceAndPath(MengSamaNetMusic.MOD_ID, "hud_cover/" + uuid.toString().replace("-", ""));
     }
 
     private static ResourceLocation textureLocationForUrl(String url) {
         UUID uuid = UUID.nameUUIDFromBytes(url.getBytes(StandardCharsets.UTF_8));
-        return new ResourceLocation(MengSamaNetMusic.MOD_ID, "hud_cover_url/" + uuid.toString().replace("-", ""));
+        return ResourceLocation.fromNamespaceAndPath(MengSamaNetMusic.MOD_ID, "hud_cover_url/" + uuid.toString().replace("-", ""));
     }
 
     public static SongInfo getInfo() { return info; }

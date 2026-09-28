@@ -1,4 +1,5 @@
 package com.mengsama.mod.mengsamanetmusic.earbuds.client;
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.mengsama.mod.mengsamanetmusic.earbuds.*;
 import com.mengsama.mod.mengsamanetmusic.network.*;
 import com.mengsama.mod.mengsamanetmusic.item.MusicPlayerItem;
@@ -10,15 +11,16 @@ import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.EntityHitResult;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.*;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.event.*;
+import net.neoforged.neoforge.event.tick.*;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 import org.lwjgl.glfw.GLFW;
 import java.util.*;
 
-@Mod.EventBusSubscriber(modid="mengsamanetmusic",value=Dist.CLIENT)
+@EventBusSubscriber(modid="mengsamanetmusic",value=Dist.CLIENT)
 public final class EarbudClient {
     private static final EarbudVisualState VISUALS=new EarbudVisualState();
     public static final Map<UUID,CompoundTag> DEVICES=VISUALS.devices();
@@ -62,8 +64,8 @@ public final class EarbudClient {
     @SubscribeEvent public static void pick(InputEvent.InteractionKeyMappingTriggered event) {
         var mc=Minecraft.getInstance();if(event.isPickBlock()&&mc.player!=null&&(mc.player.getMainHandItem().getItem() instanceof MusicPlayerItem||sharing()))event.setCanceled(true);
     }
-    @SubscribeEvent public static void clientTick(TickEvent.ClientTickEvent event) {
-        if(event.phase!=TickEvent.Phase.END)return;var mc=Minecraft.getInstance();
+    @SubscribeEvent public static void clientTick(ClientTickEvent.Post event) {
+        var mc=Minecraft.getInstance();
         if(VISUALS.expire(mc.level,mc.level==null?0:mc.level.getGameTime())) EarbudRender.clear();
         if(mc.level==null||mc.player==null)return;
         if(pending!=null&&mc.screen==null){mc.setScreen(new ConsentScreen(pending));pending=null;return;}
@@ -73,10 +75,10 @@ public final class EarbudClient {
         if(++heldTicks>=12){latched=true;mc.setScreen(new SideScreen(guest.getUUID(),guest.getScoreboardName()));}
     }
     @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut event) {VISUALS.clear();PRIVATE_TARGETS.clear();SOURCES.clear();pending=null;middle=false;latched=false;heldTicks=0;EarbudRender.clear();}
-    private static abstract class PanelScreen extends Screen {
+    private static abstract class PanelScreen extends com.mengsama.mod.mengsamanetmusic.gui.ThemedOverlayScreen {
         PanelScreen(String title){super(Component.literal(title));}
         @Override public boolean isPauseScreen(){return false;}
-        @Override public void render(GuiGraphics g,int x,int y,float partial){renderBackground(g);EarbudScreen.panel(g,width/2-130,height/2-62,260,124);g.drawCenteredString(font,title,width/2,height/2-50,0xffffe2cf);super.render(g,x,y,partial);}
+        @Override public void render(GuiGraphics g,int x,int y,float partial){renderTransparentBackground(g);EarbudScreen.panel(g,width/2-130,height/2-62,260,124);g.drawCenteredString(font,title,width/2,height/2-50,0xffffe2cf);super.render(g,x,y,partial);}
     }
     private static final class SideScreen extends PanelScreen {
         private final UUID target;private final String name;

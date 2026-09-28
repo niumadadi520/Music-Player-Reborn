@@ -1,5 +1,6 @@
 package com.mengsama.mod.mengsamanetmusic.compat.backpack;
 
+import com.mengsama.mod.mengsamanetmusic.platform.ItemData;
 import com.mengsama.mod.mengsamanetmusic.api.SongInfo;
 import com.mengsama.mod.mengsamanetmusic.compat.HeadphonesAccess;
 import com.mengsama.mod.mengsamanetmusic.item.MusicListItem;
@@ -11,7 +12,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.IUpgradeWrapper;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
@@ -65,7 +66,7 @@ public final class WalkmanUpgradeWrapper implements IUpgradeWrapper, ITickableUp
                     if (viewer.containerMenu instanceof com.mengsama.mod.mengsamanetmusic.gui.MusicPlayerMenu menu
                             && menu.getBackpackBinding() != null && target.equals(menu.getTargetId())
                             && menu.resolveValidatedDevice(viewer) == stack) {
-                        ModNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> viewer), new MaidDeviceSyncPacket(menu.containerId, stack.getOrCreateTag().copy()));
+                        ModNetwork.CHANNEL.sendToPlayer(viewer, new MaidDeviceSyncPacket(menu.containerId, ItemData.get(stack).copy()));
                     }
                 }
             }
@@ -89,7 +90,7 @@ public final class WalkmanUpgradeWrapper implements IUpgradeWrapper, ITickableUp
             MusicPlayerItem.setPlay(stack, false);
             MusicPlayerItem.setPaused(stack, false);
             MusicPlayerItem.setCurrentTime(stack, 0);
-            stack.getOrCreateTag().remove("AutoAdvanceArmed");
+            ItemData.remove(stack, "AutoAdvanceArmed");
             storage.getUpgradeHandler().setRenderUpgradeItems();
         }
         level = world; carrier = owner; position = pos.immutable(); initialized = true;
@@ -109,8 +110,8 @@ public final class WalkmanUpgradeWrapper implements IUpgradeWrapper, ITickableUp
         if (carrier != null && !com.mengsama.mod.mengsamanetmusic.earbuds.EarbudSlots.canListen(carrier, stack) && !MusicPlayerItem.isBroadcast(stack)) broadcast(true);
         if (!MusicPlayerItem.isPlay(stack) || MusicPlayerItem.isPaused(stack)) return;
         MusicPlayerItem.tickTime(stack);
-        if (MusicPlayerItem.getCurrentTime(stack) == 0 && stack.getOrCreateTag().getBoolean("AutoAdvanceArmed")) {
-            stack.getOrCreateTag().putBoolean("AutoAdvanceArmed", false);
+        if (MusicPlayerItem.getCurrentTime(stack) == 0 && ItemData.get(stack).getBoolean("AutoAdvanceArmed")) {
+            ItemData.putBoolean(stack, "AutoAdvanceArmed", false);
             MusicPlayerItem.advanceToNext(stack);
             SongInfo next = MusicListItem.getSongInfo(MusicPlayerItem.getCurrentCd(stack));
             if (next == null) stop(); else play(next, 0, false, 0);
@@ -125,7 +126,7 @@ public final class WalkmanUpgradeWrapper implements IUpgradeWrapper, ITickableUp
         MusicPlayerItem.setPlay(stack, true); MusicPlayerItem.setPaused(stack, paused);
          
         MusicPlayerItem.setCurrentTime(stack, 0);
-        stack.getOrCreateTag().remove("AutoAdvanceArmed");
+        ItemData.remove(stack, "AutoAdvanceArmed");
         if (carrier == null || !com.mengsama.mod.mengsamanetmusic.earbuds.EarbudSlots.canListen(carrier, stack)) MusicPlayerItem.setBroadcast(stack, true);
         save();
         MusicPlayerItem.resolveUrlAsync(requested).whenCompleteAsync((resolved, error) -> {
@@ -170,7 +171,7 @@ public final class WalkmanUpgradeWrapper implements IUpgradeWrapper, ITickableUp
         generation = PlaybackGenerations.next();
         if (target != null) { send(new StopMusicPacketClient(target)); PlaybackRefreshSessions.release(target); }
         MusicPlayerItem.setPlay(stack, false); MusicPlayerItem.setPaused(stack, false); MusicPlayerItem.setCurrentTime(stack, 0);
-        stack.getOrCreateTag().remove("AutoAdvanceArmed");
+        ItemData.remove(stack, "AutoAdvanceArmed");
         if (persist && level != null && level.getServer().isRunning() && !level.getServer().isStopped()) save();
     }
     public void pause(boolean value) { if (retired) return; MusicPlayerItem.setPaused(stack, value); send(new PauseMusicPacketClient(target, value, generation)); save(); }

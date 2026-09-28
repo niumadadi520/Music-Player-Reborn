@@ -1,16 +1,17 @@
 package com.mengsama.mod.mengsamanetmusic.compat;
 
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.mengsama.mod.mengsamanetmusic.MengSamaNetMusic;
 import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.event.server.ServerStartedEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.common.Mod;
 import java.lang.reflect.InvocationTargetException;
 
  
-@Mod.EventBusSubscriber(modid = MengSamaNetMusic.MOD_ID)
+@EventBusSubscriber(modid = MengSamaNetMusic.MOD_ID)
 public final class XaeroStartupCompat {
     private XaeroStartupCompat() {}
 

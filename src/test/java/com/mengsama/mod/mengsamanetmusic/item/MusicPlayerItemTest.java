@@ -1,5 +1,6 @@
 package com.mengsama.mod.mengsamanetmusic.item;
 
+import com.mengsama.mod.mengsamanetmusic.platform.ItemData;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -11,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class MusicPlayerItemTest {
     @BeforeAll
     static void bootstrapMinecraft() throws Exception {
-        net.minecraft.SharedConstants.tryDetectVersion();
+        com.mengsama.mod.mengsamanetmusic.testsupport.HeadlessEnvironment.initialize(); net.minecraft.SharedConstants.tryDetectVersion();
          
          
         var bootstrapped = net.minecraft.server.Bootstrap.class.getDeclaredField("isBootstrapped");
@@ -60,7 +61,7 @@ class MusicPlayerItemTest {
     void readOnlyInstanceLookupDoesNotCreateRandomClientIdentity() {
         ItemStack partiallySynced = new ItemStack(Items.STICK);
         assertNull(MusicPlayerItem.getInstanceId(partiallySynced));
-        assertFalse(partiallySynced.hasTag());
+        assertFalse(ItemData.has(partiallySynced));
 
         java.util.UUID authoritative = MusicPlayerItem.getOrCreateInstanceId(partiallySynced);
         assertEquals(authoritative, MusicPlayerItem.getInstanceId(partiallySynced));
@@ -122,19 +123,19 @@ class MusicPlayerItemTest {
     @Test
     void metadataAppendPersistsLastValidNestedPlaylistIndex() throws Exception {
         MusicListItem playlist = new MusicListItem();
-        net.minecraftforge.registries.ForgeRegistries.ITEMS.register(
-                new net.minecraft.resources.ResourceLocation("mengsama_test", "index_playlist"), playlist);
+        net.minecraft.core.Registry.register(net.minecraft.core.registries.BuiltInRegistries.ITEM,
+                net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("mengsama_test", "index_playlist"), playlist);
         ItemStack item = new ItemStack(playlist);
         var song = new com.mengsama.mod.mengsamanetmusic.api.SongInfo("https://example.invalid/test.mp3", "Test", 180);
         MusicListItem.setSongIndex(item, 900);
         MusicListItem.setSongInfo(song, item);
         assertEquals(1, MusicListItem.getSongCount(item));
         assertEquals(0, MusicListItem.getSongIndex(item));
-        var saved = item.getTag().copy();
+        var saved = ItemData.nullable(item).copy();
         assertEquals("Test", MusicListItem.getSongInfo(item).songName);
-        assertEquals(saved, item.getTag(), "Reading a song must not rewrite its NBT");
+        assertEquals(saved, ItemData.nullable(item), "Reading a song must not rewrite its NBT");
         MusicListItem.deleteSong(item, -1);
         MusicListItem.moveSong(item, 0, 999);
-        assertEquals(saved, item.getTag(), "Invalid edits must not erase songs");
+        assertEquals(saved, ItemData.nullable(item), "Invalid edits must not erase songs");
     }
 }

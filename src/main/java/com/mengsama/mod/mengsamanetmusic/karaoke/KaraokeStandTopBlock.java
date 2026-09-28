@@ -48,7 +48,14 @@ public final class KaraokeStandTopBlock extends Block {
         int direction = below.getValue(KaraokeDeviceBlock.FACING).get2DDataValue();
         return SHAPES[occupied][direction];
     }
-    @Override public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
+    @Override protected net.minecraft.world.ItemInteractionResult useItemOn(ItemStack held, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        var result=use(state,level,pos,player,hand,hit);
+        return result==InteractionResult.PASS ? net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION : net.minecraft.world.ItemInteractionResult.valueOf(result.name());
+    }
+    @Override protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        return use(state, level, pos, player, InteractionHand.MAIN_HAND, hit);
+    }
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
                                            InteractionHand hand, BlockHitResult hit) {
         KaraokeDeviceBlock lower = base(level, pos);
         if (lower == null) return InteractionResult.PASS;
@@ -57,7 +64,7 @@ public final class KaraokeStandTopBlock extends Block {
         return lower.use(level.getBlockState(bottom), level, bottom, player, hand,
                 new BlockHitResult(hit.getLocation(), hit.getDirection(), bottom, hit.isInside()));
     }
-    @Override public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+    @Override public ItemStack getCloneItemStack(net.minecraft.world.level.LevelReader level, BlockPos pos, BlockState state) {
         KaraokeDeviceBlock lower = base(level, pos);
         return lower == null ? ItemStack.EMPTY : lower.getCloneItemStack(level, pos.below(), level.getBlockState(pos.below()));
     }

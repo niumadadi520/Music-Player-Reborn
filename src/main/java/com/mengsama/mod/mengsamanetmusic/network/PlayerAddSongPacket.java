@@ -9,7 +9,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.network.NetworkEvent;
+import com.mengsama.mod.mengsamanetmusic.platform.PacketContext;
 
 import java.util.function.Supplier;
 
@@ -36,7 +36,7 @@ public class PlayerAddSongPacket {
         return new PlayerAddSongPacket(info, playNow);
     }
 
-    public static void handle(PlayerAddSongPacket message, Supplier<NetworkEvent.Context> contextSupplier) {
+    public static void handle(PlayerAddSongPacket message, Supplier<PacketContext> contextSupplier) {
         ServerPacketDispatch.withPlayer(contextSupplier, sender -> {
 
                 com.mengsama.mod.mengsamanetmusic.MengSamaNetMusic.LOGGER.info(

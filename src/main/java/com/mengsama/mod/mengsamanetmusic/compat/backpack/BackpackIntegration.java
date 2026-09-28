@@ -12,11 +12,12 @@ import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.server.ServerStoppedEvent;
-import net.minecraftforge.network.NetworkHooks;
-import net.p3pp3rf1y.sophisticatedbackpacks.api.CapabilityBackpackWrapper;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.*;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+
+import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.BackpackWrapper;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackBlockEntity;
 import net.p3pp3rf1y.sophisticatedbackpacks.common.gui.BackpackContainer;
 import net.p3pp3rf1y.sophisticatedbackpacks.util.PlayerInventoryProvider;
@@ -27,8 +28,8 @@ public final class BackpackIntegration {
     private static final Map<String, WalkmanUpgradeWrapper> SESSIONS = new HashMap<>();
     private BackpackIntegration() {}
     public static void register() {
-        MinecraftForge.EVENT_BUS.addListener(BackpackIntegration::tick);
-        MinecraftForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> SESSIONS.clear());
+        NeoForge.EVENT_BUS.addListener(BackpackIntegration::tick);
+        NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> SESSIONS.clear());
     }
     static void track(WalkmanUpgradeWrapper wrapper) {
         WalkmanUpgradeWrapper old = SESSIONS.put(wrapper.key(), wrapper);
@@ -36,8 +37,8 @@ public final class BackpackIntegration {
     }
     static WalkmanUpgradeWrapper current(WalkmanUpgradeWrapper wrapper) { return SESSIONS.get(wrapper.key()); }
     static void untrack(WalkmanUpgradeWrapper wrapper) { SESSIONS.values().removeIf(value -> value == wrapper); }
-    private static void tick(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
+    private static void tick(ServerTickEvent.Post event) {
+        
         var it = SESSIONS.values().iterator();
         while (it.hasNext()) {
             var device = it.next();
@@ -50,7 +51,7 @@ public final class BackpackIntegration {
     public static ItemStack earbudDevice(Player player) {
         ItemStack[] result = {ItemStack.EMPTY};
         PlayerInventoryProvider.get().runOnBackpacks(player, (backpack, handler, identifier, slot) -> {
-            backpack.getCapability(CapabilityBackpackWrapper.getCapabilityInstance()).ifPresent(wrapper -> {
+            BackpackWrapper.fromExistingData(backpack).ifPresent(wrapper -> {
                 var upgrades=wrapper.getUpgradeHandler();
                 for(int i=0;i<upgrades.getSlots();i++) if(com.mengsama.mod.mengsamanetmusic.earbuds.EarbudSlots.installed(upgrades.getStackInSlot(i))) {result[0]=upgrades.getStackInSlot(i);break;}
             }); return !result[0].isEmpty();
@@ -60,7 +61,7 @@ public final class BackpackIntegration {
         if (instance == null || player == null) return ItemStack.EMPTY;
         ItemStack[] result = {ItemStack.EMPTY};
         PlayerInventoryProvider.get().runOnBackpacks(player, (backpack, handler, identifier, slot) -> {
-            backpack.getCapability(CapabilityBackpackWrapper.getCapabilityInstance()).ifPresent(wrapper -> {
+            BackpackWrapper.fromExistingData(backpack).ifPresent(wrapper -> {
                 var upgrades = wrapper.getUpgradeHandler();
                 for (int i = 0; i < upgrades.getSlots(); i++) {
                     var item = upgrades.getStackInSlot(i);
@@ -93,7 +94,7 @@ public final class BackpackIntegration {
                 slot, MusicPlayerItem.getOrCreateInstanceId(upgrade.stack), upgrade.stack.copy());
         if (binding.resolve(player).isEmpty()) return;
         binding.attach(player);
-        NetworkHooks.openScreen(player, new SimpleMenuProvider((window, inv, p) -> MusicPlayerMenu.forBackpack(window, inv, binding),
+        player.openMenu(new SimpleMenuProvider((window, inv, p) -> MusicPlayerMenu.forBackpack(window, inv, binding),
                 Component.translatable("gui.mengsamanetmusic.backpack_music")), buffer -> {
             buffer.writeByte(MusicPlayerMenu.Context.BACKPACK.ordinal()); binding.write(buffer);
         });

@@ -57,7 +57,7 @@ public final class SongCoverCache {
             NativeImage image = NativeImage.read(new ByteArrayInputStream(bytes));
             Minecraft.getInstance().execute(() -> {
                 try {
-                    ResourceLocation id = new ResourceLocation(MengSamaNetMusic.MOD_ID,
+                    ResourceLocation id = ResourceLocation.fromNamespaceAndPath(MengSamaNetMusic.MOD_ID,
                             "cover/" + Integer.toUnsignedString(url.hashCode(), 36));
                     Minecraft.getInstance().getTextureManager().register(id, new DynamicTexture(image));
                     READY.put(url, id);

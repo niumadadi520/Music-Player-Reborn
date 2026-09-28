@@ -1,6 +1,6 @@
 package com.mengsama.mod.mengsamanetmusic.network;
 
-import net.minecraftforge.network.NetworkEvent;
+import com.mengsama.mod.mengsamanetmusic.platform.PacketContext;
 
 import java.util.function.Supplier;
 
@@ -19,7 +19,7 @@ public class PlayerRemoveSongPacket {
         return new PlayerRemoveSongPacket(buf.readInt());
     }
 
-    public static void handle(PlayerRemoveSongPacket message, Supplier<NetworkEvent.Context> contextSupplier) {
+    public static void handle(PlayerRemoveSongPacket message, Supplier<PacketContext> contextSupplier) {
         ServerPacketDispatch.withPlayer(contextSupplier, sender -> {
 
                 if (sender.containerMenu instanceof com.mengsama.mod.mengsamanetmusic.gui.MusicPlayerMenu menu)

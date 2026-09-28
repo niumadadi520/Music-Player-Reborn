@@ -3,8 +3,8 @@ package com.mengsama.mod.mengsamanetmusic.block;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.junit.jupiter.api.Test;
-import software.bernie.geckolib.core.animation.Animation;
-import software.bernie.geckolib.core.animation.RawAnimation;
+import software.bernie.geckolib.animation.Animation;
+import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.loading.json.raw.Model;
 import software.bernie.geckolib.loading.object.BakedAnimations;
 import software.bernie.geckolib.util.JsonUtil;
@@ -33,10 +33,10 @@ class PlacedMusicModelTest {
         try (var jar = new JarFile(Path.of(System.getProperty("mengsama.releaseJar")).toFile())) {
             for (String name : List.of("pink_walkman", "rose_gramophone")) {
                 JsonObject geo = json(jar, "geo/" + name + ".geo.json");
-                Model model = JsonUtil.GEO_GSON.fromJson(geo, Model.class);
+                Model model = software.bernie.geckolib.loading.json.typeadapter.KeyFramesAdapter.GEO_GSON.fromJson(geo, Model.class);
                 assertEquals(1, model.minecraftGeometry().length);
                 JsonObject animations = json(jar, "animations/" + name + ".animation.json").getAsJsonObject("animations");
-                BakedAnimations baked = JsonUtil.GEO_GSON.fromJson(animations, BakedAnimations.class);
+                BakedAnimations baked = software.bernie.geckolib.loading.json.typeadapter.KeyFramesAdapter.GEO_GSON.fromJson(animations, BakedAnimations.class);
                 assertEquals(animations.size(), baked.animations().size());
                 var play = baked.getAnimation("animation." + name + ".play");
                 assertNotNull(play);

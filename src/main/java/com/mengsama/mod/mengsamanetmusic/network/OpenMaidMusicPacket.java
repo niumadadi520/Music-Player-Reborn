@@ -8,8 +8,8 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleMenuProvider;
-import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.network.NetworkHooks;
+import com.mengsama.mod.mengsamanetmusic.platform.PacketContext;
+
 
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -21,7 +21,7 @@ public record OpenMaidMusicPacket(UUID maidId, int entityId, UUID instanceId) {
     public static OpenMaidMusicPacket decode(FriendlyByteBuf buf) {
         return new OpenMaidMusicPacket(buf.readUUID(), buf.readInt(), buf.readUUID());
     }
-    public static void handle(OpenMaidMusicPacket packet, Supplier<NetworkEvent.Context> supplier) {
+    public static void handle(OpenMaidMusicPacket packet, Supplier<PacketContext> supplier) {
         var context = supplier.get();
         ServerPlayer sender = context.getSender();
         if (sender != null) context.enqueueWork(() -> {
@@ -29,7 +29,7 @@ public record OpenMaidMusicPacket(UUID maidId, int entityId, UUID instanceId) {
             var entity = sender.serverLevel().getEntity(packet.entityId);
             if (stack.isEmpty() || entity == null || !entity.getUUID().equals(packet.maidId)
                     || !MaidMusicAccess.mayControl(sender, entity)) return;
-            NetworkHooks.openScreen(sender, new SimpleMenuProvider(
+            sender.openMenu(new SimpleMenuProvider(
                     (id, inv, ignored) -> {
                         MusicPlayerMenu menu = MusicPlayerMenu.forMaid(id, inv, packet.maidId, packet.entityId, packet.instanceId);
                         sender.getServer().execute(() -> menu.syncAuthoritativeState(sender));
@@ -43,6 +43,6 @@ public record OpenMaidMusicPacket(UUID maidId, int entityId, UUID instanceId) {
                         buf.writeUUID(packet.instanceId);
                     });
         });
-        context.setPacketHandled(true);
+        
     }
 }

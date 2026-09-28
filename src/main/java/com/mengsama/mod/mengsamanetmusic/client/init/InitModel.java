@@ -1,14 +1,15 @@
 package com.mengsama.mod.mengsamanetmusic.client.init;
 
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.mengsama.mod.mengsamanetmusic.MengSamaNetMusic;
 import com.mengsama.mod.mengsamanetmusic.client.renderer.MusicPlayerRenderer;
 import com.mengsama.mod.mengsamanetmusic.init.ModBlockEntities;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 
-@Mod.EventBusSubscriber(value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD, modid = MengSamaNetMusic.MOD_ID)
+@EventBusSubscriber(value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD, modid = MengSamaNetMusic.MOD_ID)
 public class InitModel {
 
     @SubscribeEvent

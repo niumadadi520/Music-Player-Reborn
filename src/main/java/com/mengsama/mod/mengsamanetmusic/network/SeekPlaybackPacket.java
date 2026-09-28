@@ -7,7 +7,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.network.NetworkEvent;
+import com.mengsama.mod.mengsamanetmusic.platform.PacketContext;
 import java.util.function.Supplier;
 
  
@@ -31,11 +31,11 @@ public record SeekPlaybackPacket(int entityId, BlockPos blockPos, String targetI
         return new SeekPlaybackPacket(entityId, pos, buf.readUtf(512), buf.readInt(), buf.readUtf(512));
     }
 
-    public static void handle(SeekPlaybackPacket packet, Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context context = supplier.get();
+    public static void handle(SeekPlaybackPacket packet, Supplier<PacketContext> supplier) {
+        PacketContext context = supplier.get();
         ServerPlayer sender = context.getSender();
         if (sender != null) context.enqueueWork(() -> apply(packet, sender));
-        context.setPacketHandled(true);
+        
     }
 
     private static void apply(SeekPlaybackPacket packet, ServerPlayer sender) {

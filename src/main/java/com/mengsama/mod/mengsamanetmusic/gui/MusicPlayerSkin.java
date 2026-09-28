@@ -17,7 +17,7 @@ public final class MusicPlayerSkin {
     public static final int ACCENT = 0xFF965361;
     public static final int LIST_BG = 0x22B88979;
     public static final int LIST_HOVER = 0x66CB9B91;
-    public static final ResourceLocation TEXTURE = new ResourceLocation("mengsamanetmusic", "textures/gui/rosewood_player.png");
+    public static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("mengsamanetmusic", "textures/gui/rosewood_player.png");
 
     private MusicPlayerSkin() {}
     public static int primary() { return ThemeSkin.current().text; }

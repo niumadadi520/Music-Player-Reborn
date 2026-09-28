@@ -5,7 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 
  
-abstract class PagedSongList<E extends ObjectSelectionList.Entry<E>> extends ObjectSelectionList<E> {
+abstract class PagedSongList<E extends ObjectSelectionList.Entry<E>> extends ThemedSelectionList<E> {
     private final SongPagination<E> pagination = new SongPagination<>();
     protected PagedSongList(Minecraft client, int width, int height, int top, int bottom, int rowHeight) {
         super(client, width, height, top, bottom, rowHeight);

@@ -159,7 +159,7 @@ abstract class SharedMusicPlayerScreen<M extends AbstractContainerMenu> extends 
 
     @Override protected void containerTick() {
         super.containerTick();
-        if (pageInput != null && pageInput.visible) pageInput.tick();
+        if (pageInput != null && pageInput.visible) {}
     }
 
     protected TransparentButton addSkinButton(RosewoodPlayerLayout.Control control, String label, TransparentButton.OnPress action) {
@@ -203,7 +203,7 @@ abstract class SharedMusicPlayerScreen<M extends AbstractContainerMenu> extends 
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
         updatePagination();
-        renderBackground(graphics);
+        renderTransparentBackground(graphics);
         var ui = MusicPlayerUiConfig.get();
         MusicPlayerBackground.renderCover(graphics, 0, 0, this.width, this.height, ui.background());
         MusicPlayerSkin.renderPanel(graphics, leftPos, topPos, skinLayout);
@@ -303,9 +303,9 @@ abstract class SharedMusicPlayerScreen<M extends AbstractContainerMenu> extends 
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontal, double delta) {
          
-        return super.mouseScrolled(mouseX, mouseY, delta);
+        return super.mouseScrolled(mouseX, mouseY, horizontal, delta);
     }
 
     protected abstract void updateTabVisibility();
@@ -324,7 +324,7 @@ abstract class SharedMusicPlayerScreen<M extends AbstractContainerMenu> extends 
 
     protected abstract net.minecraft.client.gui.components.events.GuiEventListener activeList();
 
-    protected class LyricList extends ObjectSelectionList<LyricList.Entry> {
+    protected class LyricList extends ThemedSelectionList<LyricList.Entry> {
 
         private String renderedIdentity = "";
 
@@ -338,8 +338,8 @@ abstract class SharedMusicPlayerScreen<M extends AbstractContainerMenu> extends 
 
         public LyricList(Minecraft mc, int w, int h, int top, int bottom, int itemH) {
             super(mc, w, h, top, bottom, itemH);
-            this.setRenderBackground(false);
-            this.setRenderTopAndBottom(false);
+            
+            
         }
 
         @Override
@@ -349,7 +349,7 @@ abstract class SharedMusicPlayerScreen<M extends AbstractContainerMenu> extends 
 
         @Override
         protected int getScrollbarPosition() {
-            return this.getLeft() + this.getWidth() - 6;
+            return this.getX() + this.getWidth() - 6;
         }
 
         public void refresh() {
@@ -393,8 +393,8 @@ abstract class SharedMusicPlayerScreen<M extends AbstractContainerMenu> extends 
         }
 
         @Override
-        public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-            boolean handled = super.mouseScrolled(mouseX, mouseY, delta);
+        public boolean mouseScrolled(double mouseX, double mouseY, double horizontal, double delta) {
+            boolean handled = super.mouseScrolled(mouseX, mouseY, horizontal, delta);
             if (handled)
                 autoFollow = false;
             return handled;

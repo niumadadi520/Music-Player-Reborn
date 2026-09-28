@@ -1,7 +1,7 @@
 {
   "type": "minecraft:crafting_shaped",
   "result": {
-    "item": "mengsamanetmusic:music_player"
+    "id": "mengsamanetmusic:music_player"
   },
   "pattern": [
     "  C",
@@ -10,10 +10,10 @@
   ],
   "key": {
     "C": {
-      "tag": "forge:ingots/copper"
+      "tag": "c:ingots/copper"
     },
     "I": {
-      "tag": "forge:ingots/iron"
+      "tag": "c:ingots/iron"
     },
     "P": {
       "item": "mengsamanetmusic:music_player_block"

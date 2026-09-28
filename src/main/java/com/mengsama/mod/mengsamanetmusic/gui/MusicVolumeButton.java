@@ -44,7 +44,7 @@ public final class MusicVolumeButton extends AbstractButton {
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
-    @Override public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+    @Override public boolean mouseScrolled(double mouseX, double mouseY, double horizontal, double delta) {
         if (!active || !visible || !isMouseOver(mouseX, mouseY) || delta == 0) return false;
         ClientMusicVolume.setPercent(ClientMusicVolume.percent() + (delta > 0 ? 5 : -5));
         updateLabel();

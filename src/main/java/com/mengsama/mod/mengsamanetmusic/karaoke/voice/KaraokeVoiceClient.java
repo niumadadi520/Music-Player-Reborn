@@ -1,18 +1,20 @@
 package com.mengsama.mod.mengsamanetmusic.karaoke.voice;
 
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.mengsama.mod.mengsamanetmusic.MengSamaNetMusic;
 import com.mengsama.mod.mengsamanetmusic.karaoke.KaraokeNetwork;
 import com.mengsama.mod.mengsamanetmusic.karaoke.client.KaraokeUi;
 import net.minecraft.client.Minecraft;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.event.tick.*;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 
 import java.util.UUID;
 
  
-@Mod.EventBusSubscriber(modid = MengSamaNetMusic.MOD_ID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = MengSamaNetMusic.MOD_ID, value = Dist.CLIENT)
 public final class KaraokeVoiceClient {
     interface CaptureBackend {
         void start(UUID nonce);
@@ -95,8 +97,8 @@ public final class KaraokeVoiceClient {
     }
 
     @SubscribeEvent
-    public static void onTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || session == null) return;
+    public static void onTick(ClientTickEvent.Post event) {
+        if (session == null) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null || mc.getConnection() == null || !mc.player.isAlive()) reset();
         else if (backend != null) backend.tick();

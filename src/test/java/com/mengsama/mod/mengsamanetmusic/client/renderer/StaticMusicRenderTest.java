@@ -9,16 +9,16 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import software.bernie.geckolib.core.animatable.GeoAnimatable;
-import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.animatable.GeoAnimatable;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class StaticMusicRenderTest {
     @BeforeAll static void bootstrap() throws Exception {
-        net.minecraft.SharedConstants.tryDetectVersion();
+        com.mengsama.mod.mengsamanetmusic.testsupport.HeadlessEnvironment.initialize(); net.minecraft.SharedConstants.tryDetectVersion();
         var flag=net.minecraft.server.Bootstrap.class.getDeclaredField("isBootstrapped");
         flag.setAccessible(true);flag.setBoolean(null,true);
         Class.forName("net.minecraft.core.registries.BuiltInRegistries");
@@ -35,7 +35,7 @@ class StaticMusicRenderTest {
         var geometry=new BakedGeoModel(List.of(),null);
         for(Direction facing:List.of(Direction.NORTH,Direction.SOUTH,Direction.EAST,Direction.WEST)) {
             var pose=new PoseStack();
-            assertDoesNotThrow(()->renderer.actuallyRender(pose,new Probe(facing),geometry,null,null,null,false,0,0,0,1,1,1,1));
+            assertDoesNotThrow(()->renderer.actuallyRender(pose,new Probe(facing),geometry,null,null,null,false,0,0,0,-1));
             assertEquals(.5,pose.last().pose().m30(),1e-6);
             assertEquals(.5,pose.last().pose().m32(),1e-6);
             double expected=switch(facing){case NORTH->1;case SOUTH->-1;default->0;};

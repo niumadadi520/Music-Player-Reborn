@@ -1,5 +1,6 @@
 package com.mengsama.mod.mengsamanetmusic.item;
 
+import com.mengsama.mod.mengsamanetmusic.platform.ItemData;
 import com.mengsama.mod.mengsamanetmusic.api.SongInfo;
 import com.mengsama.mod.mengsamanetmusic.util.PlayMode;
 import net.minecraft.ChatFormatting;
@@ -56,7 +57,7 @@ public class MusicListItem extends Item {
     }
     public static ItemStack setSongInfo(SongInfo song, ItemStack item) { PlaylistTagEditor.putSong(item, song, false); return item; }
     public static PlayMode getPlayMode(ItemStack item) {
-        return item.hasTag() ? PlayMode.getMode(item.getTag().getInt("play_mode")) : PlayMode.LOOP;
+        return ItemData.has(item) ? PlayMode.getMode(ItemData.nullable(item).getInt("play_mode")) : PlayMode.LOOP;
     }
     public static void setPlayMode(ItemStack item, PlayMode mode) {
         PlaylistTagEditor.edit(item, root -> root.putInt("play_mode", (mode == null ? PlayMode.LOOP : mode).ordinal()));
@@ -67,7 +68,7 @@ public class MusicListItem extends Item {
                 ? Component.translatable("item.mengsamanetmusic.music_list.info", selected.songName)
                 : Component.translatable("item.mengsamanetmusic.music_list.name", getSongCount(item));
     }
-    @Override public void appendHoverText(ItemStack item, Level level, List<Component> lines, TooltipFlag context) {
+    @Override public void appendHoverText(ItemStack item, net.minecraft.world.item.Item.TooltipContext level, List<Component> lines, TooltipFlag context) {
         SongInfo song = getSongInfo(item);
         if (song == null) lines.add(Component.translatable("tooltips.mengsamanetmusic.playlist.empty").withStyle(ChatFormatting.RED));
         addDetail(lines, "tooltip.mengsamanetmusic.play_mode", getPlayMode(item).getName().getString(), ChatFormatting.GOLD);

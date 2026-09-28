@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
-import software.bernie.geckolib.core.animatable.GeoAnimatable;
+import software.bernie.geckolib.animatable.GeoAnimatable;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.model.GeoModel;
 import software.bernie.geckolib.renderer.GeoBlockRenderer;
@@ -27,6 +27,11 @@ public class LodMusicBlockRenderer<T extends BlockEntity & GeoAnimatable> implem
         this.full = new GeoBlockRenderer<>(full);
         this.medium = new GeoBlockRenderer<>(medium);
         this.far = new StaticRenderer<>(far);
+    }
+
+    @Override public net.minecraft.world.phys.AABB getRenderBoundingBox(T block) {
+        return block instanceof com.mengsama.mod.mengsamanetmusic.block.MusicDeviceEntity device
+                ? device.getRenderBoundingBox() : new net.minecraft.world.phys.AABB(block.getBlockPos());
     }
 
     @Override
@@ -55,14 +60,14 @@ public class LodMusicBlockRenderer<T extends BlockEntity & GeoAnimatable> implem
         @Override
         public void actuallyRender(PoseStack pose, T block, BakedGeoModel model, RenderType renderType,
                 MultiBufferSource buffers, VertexConsumer buffer, boolean isReRender, float partialTick,
-                int light, int overlay, float red, float green, float blue, float alpha) {
+                int light, int overlay, int color) {
             if (!isReRender) {
                 pose.translate(.5, 0, .5);
                 rotateBlock(getFacing(block), pose);
             }
              
             super.actuallyRender(pose, block, model, renderType, buffers, buffer, true, partialTick,
-                    light, overlay, red, green, blue, alpha);
+                    light, overlay, color);
         }
     }
 }

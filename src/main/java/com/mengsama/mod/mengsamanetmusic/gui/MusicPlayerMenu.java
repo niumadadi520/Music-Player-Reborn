@@ -1,5 +1,6 @@
 package com.mengsama.mod.mengsamanetmusic.gui;
 
+import com.mengsama.mod.mengsamanetmusic.platform.ItemData;
 import com.mengsama.mod.mengsamanetmusic.api.SongInfo;
 import com.mengsama.mod.mengsamanetmusic.compat.EntityMusicDevice;
 import com.mengsama.mod.mengsamanetmusic.init.ModMenuTypes;
@@ -18,8 +19,8 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.extensions.IForgeMenuType;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class MusicPlayerMenu extends AbstractContainerMenu {
-    public static final MenuType<MusicPlayerMenu> TYPE = IForgeMenuType.create(MusicPlayerMenu::fromNetwork);
+    public static final MenuType<MusicPlayerMenu> TYPE = IMenuTypeExtension.create(MusicPlayerMenu::fromNetwork);
 
     public enum Context { PLAYER_HAND, MAID, BACKPACK }
     private final com.mengsama.mod.mengsamanetmusic.compat.BackpackAccess.Binding backpackBinding;
@@ -406,13 +407,13 @@ public class MusicPlayerMenu extends AbstractContainerMenu {
 
     public ItemStack getDevice() { return device; }
     public void applyAuthoritativeTag(net.minecraft.nbt.CompoundTag tag) {
-        if (!device.isEmpty()) device.setTag(tag.copy());
+        if (!device.isEmpty()) ItemData.set(device, tag.copy());
     }
     public void syncAuthoritativeState(ServerPlayer player) {
         if (backpackBinding != null) backpackBinding.save(player);
         if (!device.isEmpty()) {
-            net.minecraft.nbt.CompoundTag tag = device.getTag() == null ? new net.minecraft.nbt.CompoundTag() : device.getTag().copy();
-            ModNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player),
+            net.minecraft.nbt.CompoundTag tag = ItemData.nullable(device) == null ? new net.minecraft.nbt.CompoundTag() : ItemData.nullable(device).copy();
+            ModNetwork.CHANNEL.sendToPlayer(player,
                     new com.mengsama.mod.mengsamanetmusic.network.MaidDeviceSyncPacket(containerId, tag));
             broadcastChanges();
         }

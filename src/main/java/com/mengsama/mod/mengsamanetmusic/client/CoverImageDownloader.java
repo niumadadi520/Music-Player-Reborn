@@ -38,10 +38,31 @@ public final class CoverImageDownloader {
             try (InputStream input = connection.getInputStream()) {
                 bytes = readLimited(input);
             }
-            if (ImageIO.read(new ByteArrayInputStream(bytes)) == null) throw new IOException("ImageIO rejected cover bytes");
-            return bytes;
+            return pngForTexture(bytes);
         } finally {
             connection.disconnect();
+        }
+    }
+
+     
+    private static byte[] pngForTexture(byte[] bytes) throws IOException {
+        try (var input = new javax.imageio.stream.MemoryCacheImageInputStream(new ByteArrayInputStream(bytes))) {
+            var readers = ImageIO.getImageReaders(input);
+            if (!readers.hasNext()) throw new IOException("ImageIO rejected cover bytes");
+            var reader = readers.next();
+            try {
+                reader.setInput(input, true, true);
+                int width = reader.getWidth(0), height = reader.getHeight(0);
+                if (width <= 0 || height <= 0 || (long) width * height > 16_777_216L)
+                    throw new IOException("Cover dimensions exceed limit");
+                var image = reader.read(0);
+                if (image == null) throw new IOException("ImageIO rejected cover bytes");
+                try {
+                    var png = new ByteArrayOutputStream();
+                    if (!ImageIO.write(image, "png", png)) throw new IOException("PNG encoder unavailable");
+                    return png.toByteArray();
+                } finally { image.flush(); }
+            } finally { reader.dispose(); }
         }
     }
 

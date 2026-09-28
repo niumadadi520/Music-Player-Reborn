@@ -17,7 +17,7 @@ class KaraokeDataTest {
     @Test void issuedIdsAreDistinctAndRetainedInPersistentData() {
         KaraokeData data=new KaraokeData();var ids=new HashSet<UUID>();
         for(int i=0;i<1000;i++){UUID id=data.create();assertTrue(ids.add(id));assertTrue(data.contains(id));}
-        CompoundTag saved=data.save(new CompoundTag());
+        CompoundTag saved=data.save(new CompoundTag(),com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup());
         var list=saved.getList("Microphones",8);assertEquals(ids.size(),list.size());
         for(var tag:list)assertTrue(ids.remove(KaraokeCode.parse(tag.getAsString())));
         assertTrue(ids.isEmpty());

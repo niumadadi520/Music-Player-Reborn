@@ -29,16 +29,16 @@ class ListeningLedgerTest {
     @Test void worldDataRoundTripRetainsUnknownFieldsAndExactTotals(){
         CompoundTag tag=new CompoundTag();tag.putString("Other","keep");tag.putInt("Version",1);
         ListTag rows=new ListTag();CompoundTag row=new CompoundTag();row.putString("Key","a");row.putString("Title","A");row.putLong("Value",10);row.putString("FutureMetadata","keep");rows.add(row);tag.put("Songs",rows);
-        ListeningData data=ListeningData.load(tag);data.ledger.played("a","A","artist");CompoundTag saved=data.save(new CompoundTag());
+        ListeningData data=ListeningData.load(tag);data.ledger.played("a","A","artist");CompoundTag saved=data.save(new CompoundTag(),com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup());
         assertEquals("keep",saved.getString("Other"));assertEquals("keep",saved.getList("Songs",10).getCompound(0).getString("FutureMetadata"));
         assertEquals(11,ListeningData.load(saved).ledger.ranked(false).get(0).value());assertEquals(10,tag.getList("Songs",10).getCompound(0).getLong("Value"));
     }
     @Test void futureDataFormatIsNeverRewritten(){
         CompoundTag tag=new CompoundTag();tag.putInt("Version",9);tag.putString("Songs","future-format");
-        ListeningData data=ListeningData.load(tag);assertFalse(data.writable());assertEquals(tag,data.save(new CompoundTag()));
+        ListeningData data=ListeningData.load(tag);assertFalse(data.writable());assertEquals(tag,data.save(new CompoundTag(),com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup()));
     }
     @Test void emptySaveAndSeparateWorldInstancesAreIndependent(){
         ListeningData a=new ListeningData(),b=new ListeningData();a.ledger.played("song","A","");assertTrue(b.ledger.ranked(false).isEmpty());
-        assertEquals(1,a.save(new CompoundTag()).getInt("Version"));
+        assertEquals(1,a.save(new CompoundTag(),com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup()).getInt("Version"));
     }
 }

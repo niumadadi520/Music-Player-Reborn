@@ -39,7 +39,7 @@ class LodGeometryTest {
                         if(bone.has("cubes"))count+=bone.getAsJsonArray("cubes").size();
                     }
                     var baked=BakedModelFactory.DEFAULT_FACTORY.constructGeoModel(
-                            GeometryTree.fromModel(JsonUtil.GEO_GSON.fromJson(json,Model.class)));
+                            GeometryTree.fromModel(software.bernie.geckolib.loading.json.typeadapter.KeyFramesAdapter.GEO_GSON.fromJson(json,Model.class)));
                     assertFalse(baked.topLevelBones().isEmpty());
                     for(String bone:original.keySet())assertTrue(baked.getBone(bone).isPresent(),bone);
                     if(suffix.isEmpty())fullCount=count;

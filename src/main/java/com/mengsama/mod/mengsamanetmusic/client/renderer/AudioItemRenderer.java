@@ -8,7 +8,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemDisplayContext;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
-import software.bernie.geckolib.core.animatable.GeoAnimatable;
+import software.bernie.geckolib.animatable.GeoAnimatable;
 import software.bernie.geckolib.renderer.GeoItemRenderer;
 
 public final class AudioItemRenderer<T extends Item & GeoAnimatable> extends GeoItemRenderer<T> {
@@ -44,8 +44,8 @@ public final class AudioItemRenderer<T extends Item & GeoAnimatable> extends Geo
     }
     @Override public void preRender(PoseStack pose, T item, BakedGeoModel model, MultiBufferSource buffers,
                                     VertexConsumer buffer, boolean reRender, float partialTick, int light, int overlay,
-                                    float red, float green, float blue, float alpha) {
-        super.preRender(pose,item,model,buffers,buffer,reRender,partialTick,light,overlay,red,green,blue,alpha);
+                                    int color) {
+        super.preRender(pose,item,model,buffers,buffer,reRender,partialTick,light,overlay, color);
         if (!reRender) {
             pose.translate(0, -centerY, 0);
             if (renderedStack.getItem() instanceof com.mengsama.mod.mengsamanetmusic.item.MusicPlayerItem

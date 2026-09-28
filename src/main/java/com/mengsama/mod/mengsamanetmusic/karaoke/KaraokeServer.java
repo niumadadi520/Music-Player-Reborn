@@ -1,5 +1,7 @@
 package com.mengsama.mod.mengsamanetmusic.karaoke;
 
+import com.mengsama.mod.mengsamanetmusic.platform.ItemData;
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.mengsama.mod.mengsamanetmusic.gui.MusicPlayerMenu;
 import com.mengsama.mod.mengsamanetmusic.gui.MusicPlayerPlaylistMenu;
 import com.mengsama.mod.mengsamanetmusic.karaoke.voice.KaraokeVoiceBridge;
@@ -7,17 +9,18 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.server.ServerStoppedEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.server.ServerLifecycleHooks;
+import net.neoforged.neoforge.event.tick.*;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Mod.EventBusSubscriber(modid="mengsamanetmusic")
+@EventBusSubscriber(modid="mengsamanetmusic")
 public final class KaraokeServer {
     private static final class Session {
         final UUID microphone, nonce;
@@ -63,8 +66,8 @@ public final class KaraokeServer {
         Claim other=CLAIMS.get(id);
         if(other!=null&&other.holder!=stack&&live(other,player.server)) {
             id=KaraokeData.get(player.server).create();
-            stack.getOrCreateTag().putUUID(KaraokeMicrophoneItem.ID_TAG,id);
-            stack.getOrCreateTag().putUUID("MusicPlayerInstanceId", UUID.randomUUID());
+            ItemData.putUUID(stack, KaraokeMicrophoneItem.ID_TAG,id);
+            ItemData.putUUID(stack, "MusicPlayerInstanceId", UUID.randomUUID());
         }
         CLAIMS.put(id,new Claim(stack,player.getUUID()));
     }
@@ -247,8 +250,8 @@ public final class KaraokeServer {
     public static void sendState(ServerPlayer player,String message) {
         var state=state(player,message);LAST_STATE.put(player.getUUID(),state);KaraokeNetwork.sendState(player,state);
     }
-    @SubscribeEvent public static void tick(TickEvent.ServerTickEvent event) {
-        if(event.phase!=TickEvent.Phase.END)return;
+    @SubscribeEvent public static void tick(ServerTickEvent.Post event) {
+        
         MinecraftServer server=ServerLifecycleHooks.getCurrentServer();if(server==null||!server.isRunning()||server.isStopped())return;
          
         for(KaraokeBlockEntity device:new ArrayList<>(PENDING_LOADS)) {

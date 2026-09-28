@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 final class QqLoginSkin {
     static final int TEXT = 0xFF543A37, SECONDARY = 0xFF866258, TITLE = 0xFFFFEFE0, ACCENT = 0xFFAA6374;
-    static final ResourceLocation TEXTURE = new ResourceLocation(MengSamaNetMusic.MOD_ID, "textures/gui/rosewood_qq_login.png");
+    static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(MengSamaNetMusic.MOD_ID, "textures/gui/rosewood_qq_login.png");
     private static final int ATLAS = 1254;
     private QqLoginSkin() {}
     static int qrText() {return TEXT;}

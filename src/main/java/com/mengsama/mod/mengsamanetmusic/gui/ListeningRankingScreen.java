@@ -52,12 +52,12 @@ public final class ListeningRankingScreen extends CollectionPanelScreen {
         g.drawString(font,font.plainSubstrByWidth(rule,panelWidth-28),left+14,top+66,QqLoginSkin.secondary(),false);
     }
     static String duration(long ticks){long seconds=ticks/20;return seconds/3600+" 小时 "+seconds/60%60+" 分 "+seconds%60+" 秒";}
-    private final class RankingList extends ObjectSelectionList<Row>{
-        RankingList(){super(ListeningRankingScreen.this.minecraft,panelWidth-24,panelHeight,top+82,top+panelHeight-58,32);setLeftPos(left+12);setRenderBackground(false);setRenderTopAndBottom(false);}
+    private final class RankingList extends ThemedSelectionList<Row>{
+        RankingList(){super(ListeningRankingScreen.this.minecraft,panelWidth-24,panelHeight,top+82,top+panelHeight-58,32);setX(left+12);}
         void clear(){clearEntries();setScrollAmount(0);}
         void append(ListeningLedger.Row row,int rank){addEntry(new Row(row,rank));}
         @Override public int getRowWidth(){return getWidth()-12;}
-        @Override protected int getScrollbarPosition(){return getLeft()+getWidth()-6;}
+        @Override protected int getScrollbarPosition(){return getX()+getWidth()-6;}
     }
     private final class Row extends ObjectSelectionList.Entry<Row>{
         private final ListeningLedger.Row data;private final int rank;

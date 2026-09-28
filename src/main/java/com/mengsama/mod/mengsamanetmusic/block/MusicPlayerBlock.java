@@ -1,5 +1,6 @@
 package com.mengsama.mod.mengsamanetmusic.block;
 
+import com.mengsama.mod.mengsamanetmusic.platform.ItemData;
 import com.mengsama.mod.mengsamanetmusic.init.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
@@ -11,6 +12,8 @@ import net.minecraft.world.phys.shapes.*;
 
  
 public class MusicPlayerBlock extends MusicDeviceBlock {
+    @Override protected com.mojang.serialization.MapCodec<? extends MusicPlayerBlock> codec() { return com.mojang.serialization.MapCodec.unit(this); }
+
     public static final BooleanProperty CYCLE_DISABLE = BooleanProperty.create("cycle_disable");
     private static final VoxelShape BOUNDS = Block.box(2, 0, 2, 14, 6, 14);
     public MusicPlayerBlock() { registerDefaultState(defaultBlockState().setValue(CYCLE_DISABLE, true)); }
@@ -26,13 +29,27 @@ public class MusicPlayerBlock extends MusicDeviceBlock {
         var drops = super.getDrops(state, context);
         var entity = context.getOptionalParameter(net.minecraft.world.level.storage.loot.parameters.LootContextParams.BLOCK_ENTITY);
         if (entity instanceof MusicDeviceEntity device) {
-            var saved = device.saveWithoutMetadata();
+            var saved = device.saveCustomOnly(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup());
             saved.putBoolean("IsPlay", false);
             saved.putBoolean("IsPaused", false);
             saved.putInt("CurrentTime", 0);
-            for (var item : drops) if (item.is(asItem())) item.addTagElement("BlockEntityTag", saved.copy());
+            for (var item : drops) if (item.is(asItem())) {
+                item.applyComponents(device.collectComponents());
+                net.minecraft.world.item.BlockItem.setBlockEntityData(item, device.getType(), saved.copy());
+            }
         }
         return drops;
+    }
+    @Override public void setPlacedBy(net.minecraft.world.level.Level level, BlockPos pos, BlockState state,
+            net.minecraft.world.entity.LivingEntity placer, net.minecraft.world.item.ItemStack stack) {
+        super.setPlacedBy(level, pos, state, placer, stack);
+         
+        var legacy = ItemData.child(stack, "BlockEntityTag");
+        if (!level.isClientSide && !stack.has(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA)
+                && legacy != null && level.getBlockEntity(pos) instanceof MusicDeviceEntity device) {
+            device.loadAdditional(legacy, level.registryAccess());
+            device.setChanged();
+        }
     }
     @Override public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext collision) { return BOUNDS; }
 }

@@ -1,5 +1,6 @@
 package com.mengsama.mod.mengsamanetmusic.listening;
 
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.mengsama.mod.mengsamanetmusic.api.SongInfo;
 import com.mengsama.mod.mengsamanetmusic.network.*;
 import com.mengsama.mod.mengsamanetmusic.earbuds.EarbudAudioPacket;
@@ -8,15 +9,15 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.server.ServerStoppedEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 import java.util.*;
 import com.mengsama.mod.mengsamanetmusic.listening.ListeningPlaybackBook.Play;
 
  
-@Mod.EventBusSubscriber(modid="mengsamanetmusic")
+@EventBusSubscriber(modid="mengsamanetmusic")
 public final class ListeningServer {
     private static final Map<MinecraftServer,State> STATES = new WeakHashMap<>();
     private static final class State {

@@ -75,4 +75,32 @@ class CoverImageDownloaderTest {
         assertTrue(ImageIO.write(image, "png", output));
         return output.toByteArray();
     }
+
+    @Test void jpegCoverBecomesPngWithoutChangingDecodedPixels() throws Exception {
+        var source = new BufferedImage(16, 12, BufferedImage.TYPE_INT_RGB);
+        source.setRGB(4, 5, 0xffe07090);
+        var bytes = new ByteArrayOutputStream();
+        assertTrue(ImageIO.write(source, "jpeg", bytes));
+        byte[] jpeg = bytes.toByteArray();
+        server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        server.createContext("/album.jpg", exchange -> respond(exchange, "image/jpeg", jpeg));
+        server.start();
+        byte[] result = CoverImageDownloader.download("http://127.0.0.1:" + server.getAddress().getPort() + "/album.jpg");
+        assertEquals(0x89504e470d0a1a0aL, java.nio.ByteBuffer.wrap(result).getLong());
+        var expected = ImageIO.read(new java.io.ByteArrayInputStream(jpeg));
+        var actual = ImageIO.read(new java.io.ByteArrayInputStream(result));
+        assertEquals(expected.getWidth(), actual.getWidth()); assertEquals(expected.getHeight(), actual.getHeight());
+        assertArrayEquals(expected.getRGB(0, 0, 16, 12, null, 0, 16), actual.getRGB(0, 0, 16, 12, null, 0, 16));
+    }
+
+    @Test void pngTransparencySurvivesNormalization() throws Exception {
+        byte[] original = png();
+        server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        server.createContext("/album.png", exchange -> respond(exchange, "image/png", original));
+        server.start();
+        byte[] result = CoverImageDownloader.download("http://127.0.0.1:" + server.getAddress().getPort() + "/album.png");
+        var decoded = ImageIO.read(new java.io.ByteArrayInputStream(result));
+        assertEquals(0xffff0000, decoded.getRGB(0, 0));
+        assertEquals(0, decoded.getRGB(1, 1));
+    }
 }

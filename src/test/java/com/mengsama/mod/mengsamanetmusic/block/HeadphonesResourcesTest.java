@@ -13,17 +13,17 @@ class HeadphonesResourcesTest {
         try (var jar = new JarFile(Path.of(System.getProperty("mengsama.releaseJar")).toFile())) {
             String root = "assets/mengsamanetmusic/";
             var geo = JsonParser.parseString(new String(jar.getInputStream(jar.getJarEntry(root + "geo/pink_headphones.geo.json")).readAllBytes(), StandardCharsets.UTF_8));
-            assertNotNull(JsonUtil.GEO_GSON.fromJson(geo, Model.class));
+            assertNotNull(software.bernie.geckolib.loading.json.typeadapter.KeyFramesAdapter.GEO_GSON.fromJson(geo, Model.class));
             assertTrue(geo.toString().contains("armorHead"));
             var anim = JsonParser.parseString(new String(jar.getInputStream(jar.getJarEntry(root + "animations/pink_walkman.animation.json")).readAllBytes(), StandardCharsets.UTF_8)).getAsJsonObject().getAsJsonObject("animations");
-            var baked = JsonUtil.GEO_GSON.fromJson(anim, BakedAnimations.class);
+            var baked = software.bernie.geckolib.loading.json.typeadapter.KeyFramesAdapter.GEO_GSON.fromJson(anim, BakedAnimations.class);
             for (WalkmanControl control : WalkmanControl.values()) {
                 var a = baked.getAnimation("animation.pink_walkman." + control.animation);
                 assertNotNull(a);
                 assertTrue(a.length() > 0);
                 assertEquals(1, a.boneAnimations().length);
             }
-            assertNotNull(jar.getJarEntry("data/curios/tags/items/head.json"));
+            assertNotNull(jar.getJarEntry("data/curios/tags/item/head.json"));
             assertNotNull(jar.getJarEntry("data/mengsamanetmusic/curios/entities/headphones_player.json"));
             assertNull(jar.getJarEntry("top/theillusivec4/curios/Curios.class"), "Curios must remain an optional separate mod");
         }

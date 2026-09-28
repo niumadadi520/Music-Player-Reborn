@@ -1,5 +1,6 @@
 package com.mengsama.mod.mengsamanetmusic.gui.theme;
 
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.google.gson.JsonParser;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mengsama.mod.mengsamanetmusic.gui.RosewoodPlayerLayout.Rect;
@@ -8,16 +9,16 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
  
-@Mod.EventBusSubscriber(modid="mengsamanetmusic",value=Dist.CLIENT,bus=Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid="mengsamanetmusic",value=Dist.CLIENT,bus=EventBusSubscriber.Bus.MOD)
 public final class PaintedThemeTextures {
     public static final int CACHE_LIMIT=8;
     private static final int SIZE=ThemeAtlasLayout.TEXTURE_SIZE;
@@ -36,9 +37,9 @@ public final class PaintedThemeTextures {
         Atlas cached=CACHE.get(theme);if(cached!=null)return cached;
         var mc=Minecraft.getInstance();var manager=mc.getResourceManager();
         NativeImage reduced=null;DynamicTexture dynamic=null;boolean registered=false;
-        try(var input=manager.getResourceOrThrow(new ResourceLocation("mengsamanetmusic","textures/gui/themes/"+theme.id+".png")).open();
+        try(var input=manager.getResourceOrThrow(ResourceLocation.fromNamespaceAndPath("mengsamanetmusic", "textures/gui/themes/"+theme.id+".png")).open();
             var original=NativeImage.read(input);
-            var metadata=new InputStreamReader(manager.getResourceOrThrow(new ResourceLocation("mengsamanetmusic","textures/gui/themes/regions.json")).open(),StandardCharsets.UTF_8)){
+            var metadata=new InputStreamReader(manager.getResourceOrThrow(ResourceLocation.fromNamespaceAndPath("mengsamanetmusic", "textures/gui/themes/regions.json")).open(),StandardCharsets.UTF_8)){
             var rows=JsonParser.parseReader(metadata).getAsJsonObject().getAsJsonArray(theme.id);
             if(rows==null||rows.size()!=4)throw new java.io.IOException("Missing four button states");
             Rect[] regions=new Rect[4];
@@ -50,7 +51,7 @@ public final class PaintedThemeTextures {
             reduced=new NativeImage(SIZE,SIZE,false);
             original.resizeSubRectTo(0,0,original.getWidth(),original.getHeight(),reduced);
             dynamic=new DynamicTexture(reduced);reduced=null;dynamic.setFilter(false,false);
-            var id=new ResourceLocation("mengsamanetmusic","painted_theme/"+theme.id);
+            var id=ResourceLocation.fromNamespaceAndPath("mengsamanetmusic", "painted_theme/"+theme.id);
             mc.getTextureManager().register(id,dynamic);registered=true;
             Atlas atlas=new Atlas(id,regions);CACHE.put(theme,atlas);
             while(CACHE.size()>CACHE_LIMIT){var iterator=CACHE.entrySet().iterator();var oldest=iterator.next();mc.getTextureManager().release(oldest.getValue().texture);iterator.remove();}

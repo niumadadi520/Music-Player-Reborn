@@ -1,5 +1,6 @@
 package com.mengsama.mod.mengsamanetmusic.block;
 
+import com.mengsama.mod.mengsamanetmusic.platform.ItemData;
 import com.mengsama.mod.mengsamanetmusic.init.ModItems;
 import com.mengsama.mod.mengsamanetmusic.init.ModBlockEntities;
 import com.mengsama.mod.mengsamanetmusic.util.PlayMode;
@@ -25,6 +26,8 @@ import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings("deprecation")
 public class PortableMusicPlayerBlock extends MusicDeviceBlock {
+    @Override protected com.mojang.serialization.MapCodec<? extends PortableMusicPlayerBlock> codec() { return com.mojang.serialization.MapCodec.unit(this); }
+
 
     protected static final VoxelShape SHAPE_NORTH = Block.box(2.3, 0, 5.15, 13.7, 12, 10.85);
     protected static final VoxelShape SHAPE_SOUTH = Block.box(2.3, 0, 5.15, 13.7, 12, 10.85);
@@ -46,7 +49,7 @@ public class PortableMusicPlayerBlock extends MusicDeviceBlock {
         if (level.isClientSide) return;
         BlockEntity be = level.getBlockEntity(pos);
         if (be instanceof PortableMusicPlayerBlockEntity player) {
-            CompoundTag tag = stack.getTag();
+            CompoundTag tag = ItemData.nullable(stack);
             player.retainItemData(tag);
             if (placer instanceof ServerPlayer owner) {
                 com.mengsama.mod.mengsamanetmusic.earbuds.EarbudSessions.disconnect(owner,"随身听已放下，一起听已结束");
@@ -55,7 +58,8 @@ public class PortableMusicPlayerBlock extends MusicDeviceBlock {
             if (tag != null) {
 
                 if (tag.contains("Item")) {
-                    player.getPlayerInv().deserializeNBT(tag.getCompound("Item"));
+                    var songs = com.mengsama.mod.mengsamanetmusic.item.MusicPlayerItem.loadAllCds(stack);
+                    for (int slot = 0; slot < songs.size(); slot++) player.getPlayerInv().setStackInSlot(slot, songs.get(slot).copy());
                 }
                 if (tag.contains("PlayIndex")) {
                     player.setPlayIndex(tag.getInt("PlayIndex"));
@@ -81,13 +85,14 @@ public class PortableMusicPlayerBlock extends MusicDeviceBlock {
         if (moving) return;
         PortableMusicPlayerBlockEntity walkman = (PortableMusicPlayerBlockEntity)device;
         ItemStack dropped = new ItemStack(ModItems.MUSIC_PLAYER.get());
+        dropped.applyComponents(walkman.collectComponents());
         CompoundTag data = walkman.retainedItemData();
         data.putBoolean("IsPlay", false); data.putBoolean("IsPaused", false);
         data.putInt("CurrentTime", 0); data.remove("AutoAdvanceArmed");
-        data.put("Item", walkman.getPlayerInv().serializeNBT());
+        data.put("Item", walkman.getPlayerInv().serializeNBT(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup()));
         data.putInt("PlayIndex", walkman.getPlayIndex());
         data.putInt("PlayMode", walkman.getPlayMode().ordinal());
-        dropped.setTag(data);
+        ItemData.set(dropped, data);
         Block.popResource(level, pos, dropped);
     }
 

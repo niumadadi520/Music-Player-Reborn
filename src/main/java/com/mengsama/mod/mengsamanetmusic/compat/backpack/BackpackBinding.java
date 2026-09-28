@@ -8,7 +8,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.network.NetworkHooks;
+
 import net.p3pp3rf1y.sophisticatedbackpacks.common.gui.BackpackContainer;
 import net.p3pp3rf1y.sophisticatedbackpacks.common.gui.BackpackContext;
 import java.util.UUID;
@@ -59,14 +59,14 @@ public final class BackpackBinding implements BackpackAccess.Binding {
     @Override public void pause(ServerPlayer player, boolean paused) { var upgrade = upgrade(player); if (upgrade != null) upgrade.pause(paused); }
     @Override public void broadcast(ServerPlayer player, boolean broadcast) { var upgrade = upgrade(player); if (upgrade != null) upgrade.broadcast(broadcast); }
     @Override public void write(FriendlyByteBuf buffer) {
-        context.toBuffer(buffer); buffer.writeUUID(backpackId); buffer.writeVarInt(slot); buffer.writeUUID(deviceId); buffer.writeItem(snapshot);
+        context.toBuffer(buffer); buffer.writeUUID(backpackId); buffer.writeVarInt(slot); buffer.writeUUID(deviceId); ItemStack.OPTIONAL_STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf)buffer,snapshot);
     }
     public static BackpackBinding read(FriendlyByteBuf buffer, Player player) {
-        return new BackpackBinding(BackpackContext.fromBuffer(buffer, player.level()), buffer.readUUID(), buffer.readVarInt(), buffer.readUUID(), buffer.readItem());
+        return new BackpackBinding(BackpackContext.fromBuffer(buffer, player.level()), buffer.readUUID(), buffer.readVarInt(), buffer.readUUID(), ItemStack.OPTIONAL_STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf)buffer));
     }
     @Override public void returnToBackpack(ServerPlayer player) {
         if (resolve(player).isEmpty()) return;
-        NetworkHooks.openScreen(player, new SimpleMenuProvider((window, inv, p) -> new BackpackContainer(window, p, context),
+        player.openMenu(new SimpleMenuProvider((window, inv, p) -> new BackpackContainer(window, p, context),
                 context.getBackpackWrapper(player).getBackpack().getHoverName()), context::toBuffer);
     }
 }

@@ -10,16 +10,16 @@
       "item": "minecraft:string"
     },
     "C": {
-      "tag": "forge:ingots/copper"
+      "tag": "c:ingots/copper"
     },
     "I": {
-      "tag": "forge:ingots/iron"
+      "tag": "c:ingots/iron"
     },
     "R": {
       "item": "minecraft:redstone"
     }
   },
   "result": {
-    "item": "mengsamanetmusic:pink_wired_earbuds_both"
+    "id": "mengsamanetmusic:pink_wired_earbuds_both"
   }
 }

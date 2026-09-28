@@ -1,5 +1,6 @@
 package com.mengsama.mod.mengsamanetmusic.earbuds;
 
+import com.mengsama.mod.mengsamanetmusic.platform.ItemData;
 import com.mengsama.mod.mengsamanetmusic.item.MusicPlayerItem;
 import com.mengsama.mod.mengsamanetmusic.earbuds.client.cable.CableCurve;
 import com.mengsama.mod.mengsamanetmusic.earbuds.client.handoff.HandoffClientAdapter;
@@ -19,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class EarbudFeatureTest {
     static EarbudItem wired,left,right,box;static MusicPlayerItem walkman;
     @BeforeAll static void bootstrap()throws Exception {
-        net.minecraft.SharedConstants.tryDetectVersion();var field=net.minecraft.server.Bootstrap.class.getDeclaredField("isBootstrapped");field.setAccessible(true);field.setBoolean(null,true);
+        com.mengsama.mod.mengsamanetmusic.testsupport.HeadlessEnvironment.initialize(); net.minecraft.SharedConstants.tryDetectVersion();var field=net.minecraft.server.Bootstrap.class.getDeclaredField("isBootstrapped");field.setAccessible(true);field.setBoolean(null,true);
         Class.forName("net.minecraft.core.registries.BuiltInRegistries");
         wired=register("pink_wired_earbuds_both",new EarbudItem(0,"pink_wired_earbuds_both"));
         left=register("pink_bluetooth_earbuds_left",new EarbudItem(1,"pink_bluetooth_earbuds_left"));
@@ -27,7 +28,7 @@ class EarbudFeatureTest {
         box=register("pink_bluetooth_case",new EarbudItem(3,"pink_bluetooth_case"));
         walkman=register("test_earbud_walkman",new MusicPlayerItem(Blocks.STONE,new Item.Properties().stacksTo(1)));
     }
-    private static <T extends Item>T register(String name,T item){return Registry.register(BuiltInRegistries.ITEM,new ResourceLocation("mengsamanetmusic",name),item);}
+    private static <T extends Item>T register(String name,T item){return Registry.register(BuiltInRegistries.ITEM,ResourceLocation.fromNamespaceAndPath("mengsamanetmusic", name),item);}
     @Test void onlyWalkmanOffersEarbudSlotsEvenThoughMicrophonesInheritItsPlayback() {
         var standing=register("test_ui_standing_mic",new com.mengsama.mod.mengsamanetmusic.karaoke.KaraokeMicrophoneItem(Blocks.STONE,"pink_microphone"));
         var handheld=register("test_ui_handheld_mic",new com.mengsama.mod.mengsamanetmusic.karaoke.KaraokeMicrophoneItem(Blocks.STONE,"pink_handheld_microphone"));
@@ -39,7 +40,7 @@ class EarbudFeatureTest {
     }
     @Test void openingTheLidDoesNotLowerAndReequipTheHeldCase() {
         ItemStack closed=new ItemStack(box), opened=closed.copy();
-        opened.getOrCreateTag().putBoolean("EarbudCaseOpen",true);
+        ItemData.putBoolean(opened, "EarbudCaseOpen",true);
         assertFalse(box.shouldCauseReequipAnimation(closed,opened,false));
         assertTrue(box.shouldCauseReequipAnimation(closed,opened,true));
         assertTrue(box.shouldCauseReequipAnimation(closed,new ItemStack(left),false));
@@ -47,20 +48,20 @@ class EarbudFeatureTest {
     @Test void earbudSlotRoundTripPreservesPlaylistIdentityAndCustomData() {
         ItemStack device=new ItemStack(walkman);UUID id=MusicPlayerItem.getOrCreateInstanceId(device);
         var songs=new ListTag();var song=new CompoundTag();song.putString("Title","认真的雪");songs.add(song);
-        device.getOrCreateTag().put("ExistingPlaylist",songs);device.getOrCreateTag().putString("CustomName","keep");
-        CompoundTag original=device.getTag().copy();ItemStack earbud=new ItemStack(left);earbud.getOrCreateTag().putString("OwnerNote","left-only");
-        EarbudSlots.set(device,1,earbud);ItemStack restored=ItemStack.of(device.save(new CompoundTag()));
-        assertEquals("left-only",EarbudSlots.get(restored,1).getOrCreateTag().getString("OwnerNote"));
-        assertEquals(id,MusicPlayerItem.getInstanceId(restored));CompoundTag other=restored.getTag().copy();other.remove(EarbudSlots.KEY);assertEquals(original,other);
-        EarbudSlots.set(restored,1,ItemStack.EMPTY);assertEquals(0,EarbudSlots.mask(restored));assertEquals(original.get("ExistingPlaylist"),restored.getTag().get("ExistingPlaylist"));
+        ItemData.put(device, "ExistingPlaylist",songs);ItemData.putString(device, "CustomName","keep");
+        CompoundTag original=ItemData.nullable(device).copy();ItemStack earbud=new ItemStack(left);ItemData.putString(earbud, "OwnerNote","left-only");
+        EarbudSlots.set(device,1,earbud);ItemStack restored=ItemStack.parseOptional(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup(), ((net.minecraft.nbt.CompoundTag)device.saveOptional(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup())));
+        assertEquals("left-only",ItemData.get(EarbudSlots.get(restored,1)).getString("OwnerNote"));
+        assertEquals(id,MusicPlayerItem.getInstanceId(restored));CompoundTag other=ItemData.nullable(restored).copy();other.remove(EarbudSlots.KEY);assertEquals(original,other);
+        EarbudSlots.set(restored,1,ItemStack.EMPTY);assertEquals(0,EarbudSlots.mask(restored));assertEquals(original.get("ExistingPlaylist"),ItemData.nullable(restored).get("ExistingPlaylist"));
     }
     @Test void slotsRejectWrongEarCaseAndOversizedStackWithoutChangingDevice() {
-        var device=new ItemStack(walkman);var before=device.save(new CompoundTag());
+        var device=new ItemStack(walkman);var before=((net.minecraft.nbt.CompoundTag)device.saveOptional(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup()));
         assertThrows(IllegalArgumentException.class,()->EarbudSlots.set(device,1,new ItemStack(right)));
         assertThrows(IllegalArgumentException.class,()->EarbudSlots.set(device,0,new ItemStack(box)));
         assertThrows(IllegalArgumentException.class,()->EarbudSlots.set(device,1,new ItemStack(left,2)));
         assertThrows(IllegalArgumentException.class,()->EarbudSlots.set(device,3,ItemStack.EMPTY));
-        assertEquals(before,device.save(new CompoundTag()));
+        assertEquals(before,((net.minecraft.nbt.CompoundTag)device.saveOptional(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup())));
     }
     @Test void wiredHasPriorityAndAllInstalledModesOverrideBroadcast() {
         ItemStack device=new ItemStack(walkman);MusicPlayerItem.setBroadcast(device,true);assertTrue(MusicPlayerItem.isBroadcast(device));
@@ -72,7 +73,7 @@ class EarbudFeatureTest {
     @Test void caseReopenAndSaveReloadNeverRegenerateRemovedEarbuds() {
         ItemStack item=new ItemStack(box);EarbudSlots.initializeCase(item,new ItemStack(left),new ItemStack(right));
         assertFalse(EarbudSlots.get(item,1).isEmpty());EarbudSlots.set(item,1,ItemStack.EMPTY);EarbudSlots.set(item,2,ItemStack.EMPTY);
-        ItemStack restored=ItemStack.of(item.save(new CompoundTag()));EarbudSlots.initializeCase(restored,new ItemStack(left),new ItemStack(right));
+        ItemStack restored=ItemStack.parseOptional(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup(), ((net.minecraft.nbt.CompoundTag)item.saveOptional(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup())));EarbudSlots.initializeCase(restored,new ItemStack(left),new ItemStack(right));
         assertTrue(EarbudSlots.get(restored,1).isEmpty());assertTrue(EarbudSlots.get(restored,2).isEmpty());
     }
     @Test void invitationCanOnlyBeAnsweredByItsRecipientBeforeExpiry() {

@@ -1,5 +1,6 @@
 package com.mengsama.mod.mengsamanetmusic.karaoke;
 
+import com.mengsama.mod.mengsamanetmusic.platform.ItemData;
 import com.mengsama.mod.mengsamanetmusic.item.MusicPlayerItem;
 import com.mengsama.mod.mengsamanetmusic.util.PlayMode;
 import net.minecraft.core.NonNullList;
@@ -10,7 +11,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraftforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class KaraokeMicrophoneDataTest {
     @BeforeAll static void bootstrap() throws Exception {
-        net.minecraft.SharedConstants.tryDetectVersion();
+        com.mengsama.mod.mengsamanetmusic.testsupport.HeadlessEnvironment.initialize(); net.minecraft.SharedConstants.tryDetectVersion();
         var bootstrapped = net.minecraft.server.Bootstrap.class.getDeclaredField("isBootstrapped");
         bootstrapped.setAccessible(true);
         bootstrapped.setBoolean(null, true);
@@ -29,8 +30,8 @@ class KaraokeMicrophoneDataTest {
 
     private static ItemStack song(String name) {
         ItemStack result = new ItemStack(Items.MUSIC_DISC_13);
-        result.getOrCreateTag().putString("CustomMarker", name);
-        result.getOrCreateTag().putByteArray("UnknownBinary", new byte[]{-1, 0, 1, 42});
+        ItemData.putString(result, "CustomMarker", name);
+        ItemData.update(result, tag -> tag.putByteArray("UnknownBinary", new byte[]{-1, 0, 1, 42}));
         ListTag songs = new ListTag();
         for (int i = 0; i < 3; i++) {
             CompoundTag track = new CompoundTag();
@@ -39,17 +40,17 @@ class KaraokeMicrophoneDataTest {
             track.putString("FutureField", "keep");
             songs.add(track);
         }
-        result.getOrCreateTag().put("NetMusicSongInfoList", songs);
-        result.getOrCreateTag().putInt("index", 2);
+        ItemData.put(result, "NetMusicSongInfoList", songs);
+        ItemData.putInt(result, "index", 2);
         return result;
     }
     private static ItemStack template() {
         ItemStack result = new ItemStack(Items.STICK);
-        result.getOrCreateTag().putString("OwnerNote", "my microphone");
-        result.getOrCreateTag().putUUID(KaraokeMicrophoneItem.ID_TAG, UUID.randomUUID());
+        ItemData.putString(result, "OwnerNote", "my microphone");
+        ItemData.putUUID(result, KaraokeMicrophoneItem.ID_TAG, UUID.randomUUID());
         CompoundTag item = new CompoundTag();
         item.putString("UnknownInventoryField", "preserve");
-        result.addTagElement("Item", item);
+        ItemData.put(result, "Item", item);
         return result;
     }
     private static ItemStackHandler sparseSongs() {
@@ -63,11 +64,11 @@ class KaraokeMicrophoneDataTest {
         ItemStack mic = template();
         NonNullList<ItemStack> songs = NonNullList.withSize(54, ItemStack.EMPTY);
         songs.set(0, song("A")); songs.set(2, song("B"));
-        ContainerHelper.saveAllItems(mic.getTagElement("Item"), songs);
+        var stored=ItemData.child(mic,"Item");ContainerHelper.saveAllItems(stored,songs,com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup());ItemData.put(mic,"Item",stored);
         MusicPlayerItem.setPlayIndex(mic, 2); MusicPlayerItem.setPlayMode(mic, PlayMode.RANDOM);
         var imported = KaraokeMicrophoneData.playlist(mic);
         assertTrue(imported.get(1).isEmpty());
-        assertEquals(songs.get(2).save(new CompoundTag()), imported.get(2).save(new CompoundTag()));
+        assertEquals(((net.minecraft.nbt.CompoundTag)songs.get(2).saveOptional(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup())), ((net.minecraft.nbt.CompoundTag)imported.get(2).saveOptional(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup())));
         assertEquals(2, KaraokeMicrophoneData.playIndex(mic));
         assertEquals(PlayMode.RANDOM, KaraokeMicrophoneData.playMode(mic));
     }
@@ -76,43 +77,43 @@ class KaraokeMicrophoneDataTest {
         ItemStack mic = template();
         UUID id = KaraokeMicrophoneItem.getId(mic);
         ItemStackHandler inventory = sparseSongs();
-        CompoundTag original = mic.save(new CompoundTag());
+        CompoundTag original = ((net.minecraft.nbt.CompoundTag)mic.saveOptional(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup()));
         ItemStack exported = KaraokeMicrophoneData.snapshot(mic, id, inventory, 2, PlayMode.RANDOM);
         assertEquals(id, KaraokeMicrophoneItem.getId(exported));
         assertEquals(1, MusicPlayerItem.getPlayIndex(exported));
         assertEquals(PlayMode.RANDOM, MusicPlayerItem.getPlayMode(exported));
-        assertEquals(inventory.getStackInSlot(2).save(new CompoundTag()), MusicPlayerItem.loadAllCds(exported).get(1).save(new CompoundTag()));
-        assertEquals("preserve", exported.getTagElement("Item").getString("UnknownInventoryField"));
-        assertEquals("my microphone", exported.getTag().getString("OwnerNote"));
-        assertEquals(original, mic.save(new CompoundTag()), "snapshot must not modify the template");
-        exported.getTag().putString("OwnerNote", "changed copy");
-        assertEquals("my microphone", mic.getTag().getString("OwnerNote"));
+        assertEquals(((net.minecraft.nbt.CompoundTag)inventory.getStackInSlot(2).saveOptional(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup())), MusicPlayerItem.loadAllCds(exported).get(1).saveOptional(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup()));
+        assertEquals("preserve", ItemData.child(exported, "Item").getString("UnknownInventoryField"));
+        assertEquals("my microphone", ItemData.nullable(exported).getString("OwnerNote"));
+        assertEquals(original, ((net.minecraft.nbt.CompoundTag)mic.saveOptional(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup())), "snapshot must not modify the template");
+        ItemData.putString(exported, "OwnerNote", "changed copy");
+        assertEquals("my microphone", ItemData.nullable(mic).getString("OwnerNote"));
     }
 
     @Test void deletingEarlierSlotWhileMountedExportsLiveRemainingSongAndDoesNotRestoreDeletedSong() {
         ItemStack mic = template();
         ItemStackHandler inventory = sparseSongs();
-        CompoundTag expectedSong = inventory.getStackInSlot(2).save(new CompoundTag());
+        CompoundTag expectedSong = ((net.minecraft.nbt.CompoundTag)inventory.getStackInSlot(2).saveOptional(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup()));
          
         inventory.setStackInSlot(0, ItemStack.EMPTY);
         ItemStack exported = KaraokeMicrophoneData.snapshot(mic, KaraokeMicrophoneItem.getId(mic), inventory, 2, PlayMode.SEQUENTIAL);
-        var imported = KaraokeMicrophoneData.playlist(ItemStack.of(exported.save(new CompoundTag())));
+        var imported = KaraokeMicrophoneData.playlist(ItemStack.parseOptional(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup(), ((net.minecraft.nbt.CompoundTag)exported.saveOptional(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup()))));
         assertEquals(0, KaraokeMicrophoneData.playIndex(exported));
-        assertEquals(expectedSong, imported.get(0).save(new CompoundTag()));
+        assertEquals(expectedSong, ((net.minecraft.nbt.CompoundTag)imported.get(0).saveOptional(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup())));
         assertEquals(1, imported.stream().filter(stack -> !stack.isEmpty()).count());
-        imported.get(0).getOrCreateTag().putString("CustomMarker", "changed copy");
-        assertEquals(expectedSong, inventory.getStackInSlot(2).save(new CompoundTag()));
+        ItemData.putString(imported.get(0), "CustomMarker", "changed copy");
+        assertEquals(expectedSong, ((net.minecraft.nbt.CompoundTag)inventory.getStackInSlot(2).saveOptional(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup())));
     }
 
     @Test void oldBlockOnlyPayloadRetainsItsSparseSelectionAndRandomModeAndUnknownFields() {
-        ItemStack mic = template(); mic.getTag().remove("Item");
+        ItemStack mic = template(); ItemData.remove(mic, "Item");
         CompoundTag legacy = new CompoundTag();
-        CompoundTag inventory = sparseSongs().serializeNBT();
+        CompoundTag inventory = sparseSongs().serializeNBT(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup());
         inventory.putString("UnknownInventoryField", "legacy kept");
         legacy.put("ItemStacksCD", inventory);
         legacy.putInt("PlayIndex", 2); legacy.putInt("PlayMode", PlayMode.RANDOM.ordinal());
         legacy.putString("FutureBlockField", "keep too");
-        mic.addTagElement("KaraokeBlockData", legacy);
+        ItemData.put(mic, "KaraokeBlockData", legacy);
         assertEquals(2, KaraokeMicrophoneData.playIndex(mic));
         assertEquals(PlayMode.RANDOM, KaraokeMicrophoneData.playMode(mic));
         var songs = KaraokeMicrophoneData.playlist(mic);
@@ -121,7 +122,7 @@ class KaraokeMicrophoneDataTest {
         for (int i = 0; i < 54; i++) live.setStackInSlot(i, songs.get(i));
         ItemStack exported = KaraokeMicrophoneData.snapshot(mic, KaraokeMicrophoneItem.getId(mic), live,
                 KaraokeMicrophoneData.playIndex(mic), KaraokeMicrophoneData.playMode(mic));
-        CompoundTag savedLegacy = exported.getTagElement("KaraokeBlockData");
+        CompoundTag savedLegacy = ItemData.child(exported, "KaraokeBlockData");
         assertEquals(1, savedLegacy.getInt("PlayIndex"));
         assertEquals(PlayMode.RANDOM.ordinal(), savedLegacy.getInt("PlayMode"));
         assertEquals("legacy kept", savedLegacy.getCompound("ItemStacksCD").getString("UnknownInventoryField"));
@@ -135,36 +136,36 @@ class KaraokeMicrophoneDataTest {
     @Test void exportedMicrophoneNeverCarriesAnActiveCaptureOrAutoplayPermission() {
         ItemStack mic = template();
         MusicPlayerItem.setPlay(mic, true); MusicPlayerItem.setPaused(mic, true); MusicPlayerItem.setCurrentTime(mic, 123);
-        mic.getTag().putBoolean("AutoAdvanceArmed", true);
-        mic.getTag().putBoolean("KaraokeRuntimeActive", true); mic.getTag().putLong("KaraokeVoiceUntil", 999);
+        ItemData.putBoolean(mic, "AutoAdvanceArmed", true);
+        ItemData.putBoolean(mic, "KaraokeRuntimeActive", true); ItemData.putLong(mic, "KaraokeVoiceUntil", 999);
         ItemStack exported = KaraokeMicrophoneData.snapshot(mic, KaraokeMicrophoneItem.getId(mic), sparseSongs(), 2, PlayMode.LOOP);
         assertFalse(MusicPlayerItem.isPlay(exported)); assertFalse(MusicPlayerItem.isPaused(exported));
         assertEquals(0, MusicPlayerItem.getCurrentTime(exported));
-        assertFalse(exported.getTag().contains("AutoAdvanceArmed"));
-        assertFalse(exported.getTag().contains("KaraokeRuntimeActive"));
-        assertFalse(exported.getTag().contains("KaraokeVoiceUntil"));
+        assertFalse(ItemData.nullable(exported).contains("AutoAdvanceArmed"));
+        assertFalse(ItemData.nullable(exported).contains("KaraokeRuntimeActive"));
+        assertFalse(ItemData.nullable(exported).contains("KaraokeVoiceUntil"));
     }
 
     @Test void emptyStandOwnMetadataCannotHideAnotherMicrophoneOrItsSongs() {
         ItemStack stand = template(); stand.setCount(12);
         CompoundTag hidden = new CompoundTag();
-        hidden.put("KaraokeMountedMicrophone", template().save(new CompoundTag()));
-        hidden.put("ItemStacksCD", sparseSongs().serializeNBT());
+        hidden.put("KaraokeMountedMicrophone", template().saveOptional(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup()));
+        hidden.put("ItemStacksCD", sparseSongs().serializeNBT(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup()));
         hidden.putUUID("KaraokeDeviceId", UUID.randomUUID());
         hidden.putString("StandPaint", "rosewood");
-        stand.addTagElement("BlockEntityTag", hidden.copy());
-        stand.addTagElement("KaraokeBlockData", hidden.copy());
+        ItemData.put(stand, "BlockEntityTag", hidden.copy());
+        ItemData.put(stand, "KaraokeBlockData", hidden.copy());
         ItemStack clean = KaraokeMicrophoneData.standOnly(stand);
         assertEquals(1, clean.getCount()); assertNull(KaraokeMicrophoneItem.getId(clean));
-        assertFalse(clean.getTag().contains("Item"));
-        assertEquals("my microphone", clean.getTag().getString("OwnerNote"));
+        assertFalse(ItemData.nullable(clean).contains("Item"));
+        assertEquals("my microphone", ItemData.nullable(clean).getString("OwnerNote"));
         for (String payload : new String[]{"BlockEntityTag", "KaraokeBlockData"}) {
-            assertEquals("rosewood", clean.getTagElement(payload).getString("StandPaint"));
-            assertFalse(clean.getTagElement(payload).contains("KaraokeMountedMicrophone"));
-            assertFalse(clean.getTagElement(payload).contains("KaraokeDeviceId"));
-            assertFalse(clean.getTagElement(payload).contains("ItemStacksCD"));
+            assertEquals("rosewood", ItemData.child(clean, payload).getString("StandPaint"));
+            assertFalse(ItemData.child(clean, payload).contains("KaraokeMountedMicrophone"));
+            assertFalse(ItemData.child(clean, payload).contains("KaraokeDeviceId"));
+            assertFalse(ItemData.child(clean, payload).contains("ItemStacksCD"));
         }
-        assertTrue(stand.getTagElement("BlockEntityTag").contains("KaraokeMountedMicrophone"));
+        assertTrue(ItemData.child(stand, "BlockEntityTag").contains("KaraokeMountedMicrophone"));
     }
 
     @Test void directPlacementEntryRejectsHandheldWithoutTouchingAWorldOrPlacementContext() {

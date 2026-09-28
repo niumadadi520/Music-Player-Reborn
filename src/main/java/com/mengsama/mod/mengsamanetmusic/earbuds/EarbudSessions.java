@@ -1,5 +1,6 @@
 package com.mengsama.mod.mengsamanetmusic.earbuds;
 
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.mengsama.mod.mengsamanetmusic.item.MusicPlayerItem;
 import com.mengsama.mod.mengsamanetmusic.compat.BackpackAccess;
 import com.mengsama.mod.mengsamanetmusic.network.*;
@@ -9,14 +10,15 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.server.ServerStoppedEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.tick.*;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 import java.util.*;
 
  
-@Mod.EventBusSubscriber(modid="mengsamanetmusic")
+@EventBusSubscriber(modid="mengsamanetmusic")
 public final class EarbudSessions {
     record Invitation(UUID id,UUID owner,UUID guest,UUID device,int side,boolean wired,long expires) {
         boolean mayAnswer(UUID sender,long now) { return guest.equals(sender) && now<=expires; }
@@ -169,8 +171,8 @@ public final class EarbudSessions {
         }
         return true;
     }
-    @SubscribeEvent public static void tick(TickEvent.ServerTickEvent event) {
-        if(event.phase!=TickEvent.Phase.END) return;MinecraftServer server=event.getServer();long tick=server.getTickCount();
+    @SubscribeEvent public static void tick(ServerTickEvent.Post event) {
+        MinecraftServer server=event.getServer();long tick=server.getTickCount();
         for(Invitation i:new ArrayList<>(INVITES.values())) if(tick>i.expires||server.getPlayerList().getPlayer(i.owner)==null||server.getPlayerList().getPlayer(i.guest)==null) {
             INVITES.remove(i.id);closeInvite(server.getPlayerList().getPlayer(i.guest),i.id);tell(server.getPlayerList().getPlayer(i.owner),"一起听邀请已超时或对方已离线");
         }

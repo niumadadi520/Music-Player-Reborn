@@ -13,7 +13,7 @@ public final class MicrophoneStandItem extends MusicDeviceBlockItem {
         super(block, new Properties().stacksTo(1), "pink_microphone_stand");
     }
 
-    @Override public void appendHoverText(ItemStack stack, Level level, List<Component> lines, TooltipFlag flag) {
+    @Override public void appendHoverText(ItemStack stack, net.minecraft.world.item.Item.TooltipContext level, List<Component> lines, TooltipFlag flag) {
         lines.add(Component.translatable("tooltip.mengsamanetmusic.microphone_stand.mount"));
         lines.add(Component.translatable("tooltip.mengsamanetmusic.microphone_stand.remove"));
         lines.add(Component.translatable("tooltip.mengsamanetmusic.microphone_stand.settings"));

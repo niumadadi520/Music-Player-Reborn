@@ -1,7 +1,7 @@
 package com.mengsama.mod.mengsamanetmusic.client.model;
 
 import net.minecraft.resources.ResourceLocation;
-import software.bernie.geckolib.core.animatable.GeoAnimatable;
+import software.bernie.geckolib.animatable.GeoAnimatable;
 import software.bernie.geckolib.model.GeoModel;
 
  
@@ -11,9 +11,9 @@ public final class PinkHeadphonesModel<T extends GeoAnimatable> extends GeoModel
     private final ResourceLocation animations;
 
     public PinkHeadphonesModel(String modId) {
-        this.geometry = new ResourceLocation(modId, "geo/pink_headphones.geo.json");
-        this.texture = new ResourceLocation(modId, "textures/armor/pink_headphones.png");
-        this.animations = new ResourceLocation(modId, "animations/pink_headphones.animation.json");
+        this.geometry = ResourceLocation.fromNamespaceAndPath(modId, "geo/pink_headphones.geo.json");
+        this.texture = ResourceLocation.fromNamespaceAndPath(modId, "textures/armor/pink_headphones.png");
+        this.animations = ResourceLocation.fromNamespaceAndPath(modId, "animations/pink_headphones.animation.json");
     }
 
     @Override

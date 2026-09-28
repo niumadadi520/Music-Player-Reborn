@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
  
-public class MoveHudScreen extends Screen {
+public class MoveHudScreen extends com.mengsama.mod.mengsamanetmusic.gui.ThemedOverlayScreen {
     private final Screen parent;
     private final MusicHudConfig.Data originalHud;
     private final ThemeColorEditor colorEditor;
@@ -136,7 +136,7 @@ public class MoveHudScreen extends Screen {
     }
 
     @Override public void render(@NotNull GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        renderBackground(g);
+        renderTransparentBackground(g);
         MoveHudLayout.Rect panel = layout.panel();
         if(com.mengsama.mod.mengsamanetmusic.gui.theme.ThemeSkin.custom())
             com.mengsama.mod.mengsamanetmusic.gui.theme.ThemeSkin.panel(g,panel.x(),panel.y(),panel.width(),panel.height(),17);

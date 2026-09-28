@@ -16,14 +16,14 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.common.extensions.IForgeMenuType;
+import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MusicPlayerPlaylistMenu extends AbstractContainerMenu {
-    public static final MenuType<MusicPlayerPlaylistMenu> TYPE = IForgeMenuType.create((windowId, inv, data) -> {
+    public static final MenuType<MusicPlayerPlaylistMenu> TYPE = IMenuTypeExtension.create((windowId, inv, data) -> {
         BlockPos pos = data.readBlockPos();
         var level = inv.player.level();
         BlockEntity be = level.getBlockEntity(pos);

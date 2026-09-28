@@ -1,13 +1,14 @@
 package com.mengsama.mod.mengsamanetmusic.item;
 
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.event.entity.item.ItemTossEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.entity.item.ItemTossEvent;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 
  
-@Mod.EventBusSubscriber(modid = "mengsamanetmusic")
+@EventBusSubscriber(modid = "mengsamanetmusic")
 public final class DroppedMusicDeviceHandler {
     private DroppedMusicDeviceHandler() {}
     @SubscribeEvent(priority = EventPriority.LOWEST)

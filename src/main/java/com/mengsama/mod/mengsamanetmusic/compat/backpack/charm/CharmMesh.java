@@ -21,7 +21,7 @@ import java.util.Map;
 
  
 final class CharmMesh {
-    private static final ResourceLocation MODEL = new ResourceLocation("mengsamanetmusic", "models/charm/pink_walkman_charm.json");
+    private static final ResourceLocation MODEL = ResourceLocation.fromNamespaceAndPath("mengsamanetmusic", "models/charm/pink_walkman_charm.json");
     final ResourceLocation texture;
     private final Map<String, Part> parts;
 
@@ -35,7 +35,7 @@ final class CharmMesh {
         try (Reader reader = resources.getResourceOrThrow(MODEL).openAsReader()) {
             root = JsonParser.parseReader(reader).getAsJsonObject();
         }
-        ResourceLocation texture = new ResourceLocation(root.get("texture").getAsString());
+        ResourceLocation texture = ResourceLocation.parse(root.get("texture").getAsString());
         JsonArray size = root.getAsJsonArray("texture_size");
         float width = size.get(0).getAsFloat(), height = size.get(1).getAsFloat();
         if (width <= 0 || height <= 0) {
@@ -94,10 +94,10 @@ final class CharmMesh {
         for (Quad quad : part.quads) {
             for (int i = 0; i < 4; i++) {
                 Vector3f position = quad.positions[i];
-                vertices.vertex(matrix.pose(), position.x, position.y, position.z)
-                        .color(255, 255, 255, 255).uv(quad.uv[i * 2], quad.uv[i * 2 + 1])
-                        .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light)
-                        .normal(matrix.normal(), quad.normal.x, quad.normal.y, quad.normal.z).endVertex();
+                vertices.addVertex(matrix.pose(), position.x, position.y, position.z)
+                        .setColor(255, 255, 255, 255).setUv(quad.uv[i * 2], quad.uv[i * 2 + 1])
+                        .setOverlay(OverlayTexture.NO_OVERLAY).setLight(light)
+                        .setNormal(matrix, quad.normal.x, quad.normal.y, quad.normal.z);
             }
         }
         for (Part child : parts.values()) {

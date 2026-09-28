@@ -13,7 +13,7 @@ import java.util.UUID;
 public final class KaraokeData extends SavedData {
     private final Set<UUID> issued = new HashSet<>();
     public static KaraokeData get(MinecraftServer server) {
-        return server.overworld().getDataStorage().computeIfAbsent(KaraokeData::load, KaraokeData::new,
+        return server.overworld().getDataStorage().computeIfAbsent(new SavedData.Factory<>(KaraokeData::new, (tag, registries) -> KaraokeData.load(tag)),
                 "mengsamanetmusic_karaoke");
     }
     private static KaraokeData load(CompoundTag tag) {
@@ -32,7 +32,7 @@ public final class KaraokeData extends SavedData {
         remember(id);
         return id;
     }
-    @Override public CompoundTag save(CompoundTag tag) {
+    @Override public CompoundTag save(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
         ListTag list = new ListTag();
         issued.stream().map(UUID::toString).sorted().forEach(id -> list.add(StringTag.valueOf(id)));
         tag.put("Microphones", list);

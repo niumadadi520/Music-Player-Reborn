@@ -9,10 +9,11 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.neoforge.event.tick.*;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -35,8 +36,8 @@ public final class ActiveMaidMusicTracker {
     }
 
     @SubscribeEvent
-    public static void onServerTick(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
+    public static void onServerTick(ServerTickEvent.Post event) {
+        
         validate(event.getServer());
     }
 
@@ -71,7 +72,7 @@ public final class ActiveMaidMusicTracker {
     }
 
     private static void broadcastStop(String targetId) {
-        ModNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new StopMusicPacketClient(targetId));
+        ModNetwork.CHANNEL.sendToAll( new StopMusicPacketClient(targetId));
     }
 
     private record ActiveDevice(ResourceKey<Level> dimension, UUID maidId, UUID instanceId, String targetId) {}

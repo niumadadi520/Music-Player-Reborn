@@ -1,7 +1,7 @@
 package com.mengsama.mod.mengsamanetmusic.config;
 
 import com.mengsama.mod.mengsamanetmusic.MengSamaNetMusic;
-import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.neoforged.fml.loading.FMLEnvironment;
 
 public final class ConfigManager {
     private ConfigManager() {
@@ -48,6 +48,6 @@ public final class ConfigManager {
     }
 
     public static boolean isDedicatedServer() {
-        return FMLEnvironment.dist == net.minecraftforge.api.distmarker.Dist.DEDICATED_SERVER;
+        return FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.DEDICATED_SERVER;
     }
 }

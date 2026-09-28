@@ -37,5 +37,5 @@ public final class EarbudScreen extends AbstractContainerScreen<EarbudMenu> {
         g.drawString(font,menu.caseMenu?"盒内耳机取走后不会重复生成":"修改耳机配置后，请重新点击播放",12,91,MusicPlayerSkin.secondary(),false);
         g.drawString(font,"物品栏",35,101,MusicPlayerSkin.secondary(),false);
     }
-    @Override public void render(GuiGraphics g,int mx,int my,float partial) { renderBackground(g);super.render(g,mx,my,partial);renderTooltip(g,mx,my); }
+    @Override public void render(GuiGraphics g,int mx,int my,float partial) { renderTransparentBackground(g);super.render(g,mx,my,partial);renderTooltip(g,mx,my); }
 }

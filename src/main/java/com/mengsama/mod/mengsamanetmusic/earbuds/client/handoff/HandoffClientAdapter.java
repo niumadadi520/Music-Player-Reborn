@@ -145,7 +145,7 @@ public final class HandoffClientAdapter {
     public static void renderMoving(DrawFrame frame,EarMeshRenderer renderer) {
         if (frame==null || !frame.drawMovingEar || frame.modelPose==null) return;
         PoseStack pose=new PoseStack();
-        pose.mulPoseMatrix(frame.modelPose);
+        pose.mulPose(frame.modelPose);
          
         pose.last().normal().set(frame.modelPose).invert().transpose();
         renderer.render(pose);
@@ -173,7 +173,7 @@ public final class HandoffClientAdapter {
         Matrix4f matrix=localGeckoPiecePose(frame,side);
         if (matrix==null) return;
         PoseStack pose=new PoseStack();
-        pose.mulPoseMatrix(matrix);
+        pose.mulPose(matrix);
         pose.last().normal().set(matrix).invert().transpose();
         renderer.render(pose);
     }

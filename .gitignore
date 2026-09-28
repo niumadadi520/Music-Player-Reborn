@@ -1,0 +1,103 @@
+# Gradle / NeoForge generated files
+.gradle/
+build/
+out/
+run/
+classes/
+*.class
+
+# Keep the Gradle Wrapper and source-required local libraries
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+!libs/
+!libs/**
+
+# IDE / editor
+.idea/
+.vscode/
+.settings/
+.metadata/
+bin/
+.classpath
+.project
+.factorypath
+*.iml
+*.ipr
+*.iws
+*.suo
+*.user
+*.code-workspace
+
+# Logs, crash dumps, temporary files
+logs/
+crash-reports/
+*.log
+*.log.*
+hs_err_pid*
+replay_pid*
+*.pid
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+
+# OS metadata
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local caches and downloaded runtime data
+/.cache/
+/cache/
+/caches/
+/downloads/
+/music-cache/
+*.cache
+
+# Local/runtime configuration (may contain cookies or account data)
+/config/
+/defaultconfigs/
+/local/
+/secrets/
+.env
+.env.*
+*.local
+*.local.*
+local.properties
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# Credentials, cookies, tokens and account exports
+**/credential.json
+**/credentials.json
+**/*credential*.json
+**/*cookie*.json
+**/*cookies*.json
+**/*token*.json
+**/*account*.json
+**/*login*.json
+**/qqmusic*.json
+**/netease*.json
+**/163music*.json
+**/authlib-injector.json
+**/usercache.json
+
+# User-selected background images (do not ignore packaged mod textures)
+background.png
+background.jpg
+background.jpeg
+background.webp
+background.gif
+backgrounds/
+背景图片/
+user-background.*
+custom-background.*
+
+# Versioned synthetic test vectors and packaged resources are not account exports.
+!src/test/resources/netease-web-vector.json

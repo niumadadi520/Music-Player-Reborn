@@ -7,7 +7,7 @@ import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
-import net.p3pp3rf1y.sophisticatedbackpacks.api.CapabilityBackpackWrapper;
+import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.BackpackWrapper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
@@ -23,7 +23,7 @@ public abstract class BackpackCharmLayerMixin {
     @Inject(method = "renderBackpack(Lnet/minecraft/client/model/EntityModel;Lnet/minecraft/world/entity/LivingEntity;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/item/ItemStack;Z)V", at = @At("TAIL"), remap = false, require = 0)
     private static void mengsama$charm(EntityModel<?> model, LivingEntity entity, PoseStack pose,
             MultiBufferSource buffers, int light, ItemStack backpack, boolean armor, CallbackInfo ci) {
-        backpack.getCapability(CapabilityBackpackWrapper.getCapabilityInstance()).ifPresent(wrapper -> {
+        BackpackWrapper.fromExistingData(backpack).ifPresent(wrapper -> {
             if (BackpackClient.hasCharm(wrapper.getRenderInfo()))
                 BackpackCharmRenderer.render(entity, pose, buffers, light, wrapper.getRenderInfo().getBatteryRenderInfo().isPresent(), BackpackClient.charmDevice(wrapper.getRenderInfo()));
         });

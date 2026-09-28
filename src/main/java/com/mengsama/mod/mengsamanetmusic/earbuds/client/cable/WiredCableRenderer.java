@@ -109,7 +109,7 @@ public final class WiredCableRenderer {
         }
     }
     private static void vertex(VertexConsumer out, Matrix4f matrix, Point point, float shade, int light, boolean warning) {
-        out.vertex(matrix, (float)point.x(), (float)point.y(), (float)point.z())
-                .color((warning?1.0f:0.79f)*shade, (warning?.76f:.53f)*shade, (warning?.30f:.53f)*shade, 1.0f).uv2(light).endVertex();
+        out.addVertex(matrix, (float)point.x(), (float)point.y(), (float)point.z())
+                .setColor((warning?1.0f:0.79f)*shade, (warning?.76f:.53f)*shade, (warning?.30f:.53f)*shade, 1.0f).setLight(light);
     }
 }
