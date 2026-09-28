@@ -8,7 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.network.NetworkEvent;
+import com.mengsama.mod.mengsamanetmusic.platform.PacketContext;
 
 import java.util.function.Supplier;
 
@@ -39,7 +39,7 @@ public class BlockAddSongPacket {
         return new BlockAddSongPacket(pos, info, playNow);
     }
 
-    public static void handle(BlockAddSongPacket message, Supplier<NetworkEvent.Context> contextSupplier) {
+    public static void handle(BlockAddSongPacket message, Supplier<PacketContext> contextSupplier) {
         ServerPacketDispatch.withPlayer(contextSupplier, sender -> {
 
                 if (!(sender.containerMenu instanceof MusicPlayerPlaylistMenu menu) || !menu.stillValid(sender)) return;

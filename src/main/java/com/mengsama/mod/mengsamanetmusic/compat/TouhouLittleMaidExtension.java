@@ -18,7 +18,7 @@ import java.util.List;
 
 @LittleMaidExtension
 public final class TouhouLittleMaidExtension implements ILittleMaid {
-    public static final ResourceLocation MUSIC_TASK_UID = new ResourceLocation(MengSamaNetMusic.MOD_ID, "music");
+    public static final ResourceLocation MUSIC_TASK_UID = ResourceLocation.fromNamespaceAndPath(MengSamaNetMusic.MOD_ID, "music");
 
     @Override
     public void addMaidTask(TaskManager manager) {

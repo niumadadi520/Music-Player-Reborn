@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.*;
 import net.minecraft.world.level.block.state.*;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.network.NetworkHooks;
+
 
  
 @SuppressWarnings("deprecation")
@@ -43,14 +43,21 @@ public abstract class MusicDeviceBlock extends HorizontalDirectionalBlock implem
         if (!level.isClientSide && level.getBlockEntity(pos) instanceof MusicDeviceEntity device)
             device.powerChanged(level.hasNeighborSignal(pos));
     }
-    @Override public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    @Override protected net.minecraft.world.ItemInteractionResult useItemOn(ItemStack held, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        var result=use(state,level,pos,player,hand,hit);
+        return result==InteractionResult.PASS ? net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION : net.minecraft.world.ItemInteractionResult.valueOf(result.name());
+    }
+    @Override protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        return use(state, level, pos, player, InteractionHand.MAIN_HAND, hit);
+    }
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (hand != InteractionHand.MAIN_HAND || !(level.getBlockEntity(pos) instanceof MusicDeviceEntity device)) return InteractionResult.PASS;
         if (!player.isSpectator() && pressDeviceControl(state, level, pos, player, hit, device))
             return InteractionResult.sidedSuccess(level.isClientSide);
         if (player instanceof ServerPlayer server) {
             if (!player.isSpectator() && acceptsPlaylist(player) && insertOne(device, player)) return InteractionResult.SUCCESS;
             beforeOpen(server, device);
-            NetworkHooks.openScreen(server, new SimpleMenuProvider(
+            server.openMenu(new SimpleMenuProvider(
                     (id, inventory, owner) -> new MusicPlayerPlaylistMenu(id, inventory, device), Component.translatable(menuTitle())),
                     buffer -> buffer.writeBlockPos(pos));
         }

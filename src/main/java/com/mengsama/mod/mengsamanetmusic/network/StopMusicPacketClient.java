@@ -2,15 +2,15 @@ package com.mengsama.mod.mengsamanetmusic.network;
 
 import com.mengsama.mod.mengsamanetmusic.client.audio.ClientMusicPlayback;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import com.mengsama.mod.mengsamanetmusic.platform.PacketContext;
 import java.util.function.Supplier;
 
 public record StopMusicPacketClient(String targetId) {
     public void encode(FriendlyByteBuf buf) { buf.writeUtf(targetId); }
     public static StopMusicPacketClient decode(FriendlyByteBuf buf) { return new StopMusicPacketClient(buf.readUtf()); }
-    public static void handle(StopMusicPacketClient packet, Supplier<NetworkEvent.Context> ctx) {
+    public static void handle(StopMusicPacketClient packet, Supplier<PacketContext> ctx) {
         ClientPacketDispatch.accept(ctx, () -> handleClient(packet));
     }
     @OnlyIn(Dist.CLIENT)

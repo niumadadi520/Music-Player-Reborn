@@ -4,9 +4,9 @@ import com.mengsama.mod.mengsamanetmusic.gui.MusicPlayerMenu;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import com.mengsama.mod.mengsamanetmusic.platform.PacketContext;
 
 import java.util.function.Supplier;
 
@@ -23,10 +23,10 @@ public record MaidDeviceSyncPacket(int containerId, CompoundTag tag) {
         return new MaidDeviceSyncPacket(containerId, tag == null ? new CompoundTag() : tag);
     }
 
-    public static void handle(MaidDeviceSyncPacket packet, Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context context = supplier.get();
+    public static void handle(MaidDeviceSyncPacket packet, Supplier<PacketContext> supplier) {
+        PacketContext context = supplier.get();
         context.enqueueWork(() -> applyClient(packet));
-        context.setPacketHandled(true);
+        
     }
 
     @OnlyIn(Dist.CLIENT)

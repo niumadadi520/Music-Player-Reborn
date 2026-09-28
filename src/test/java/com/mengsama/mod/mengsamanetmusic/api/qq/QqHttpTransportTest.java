@@ -63,4 +63,56 @@ class QqHttpTransportTest {
         new QqHttp().exchange(QqHttp.Request.get(start, Map.of(), 100, true));
         assertNull(cookie.get());
     }
+
+    @Test void globalCookieHandlerCannotHideHttpOnlySessionOrInjectAnotherAccount() throws Exception {
+        CookieHandler previous = CookieHandler.getDefault();
+        CookieManager global = new CookieManager(null, CookiePolicy.ACCEPT_ALL);
+        global.put(start, Map.of("Set-Cookie", List.of("other_account=unrelated; Path=/")));
+        AtomicReference<String> sent = new AtomicReference<>();
+        first.createContext("/start", exchange -> {
+            sent.set(exchange.getRequestHeaders().getFirst("Cookie"));
+            exchange.getResponseHeaders().add("Set-Cookie", "p_skey=session-key; Path=/; HttpOnly");
+            exchange.sendResponseHeaders(200, -1); exchange.close();
+        });
+        try {
+            CookieHandler.setDefault(global);
+            var response = new QqHttp().exchange(QqHttp.Request.get(start, Map.of("Cookie", "qrsig=own-attempt"), 100, false));
+            assertEquals("session-key", QqLoginReply.cookies(response.values("Set-Cookie")).get("p_skey"));
+            assertEquals("qrsig=own-attempt", sent.get());
+            assertSame(global, CookieHandler.getDefault());
+            assertTrue(global.getCookieStore().getCookies().stream().noneMatch(c -> c.getName().equals("p_skey")));
+        } finally {
+            CookieHandler.setDefault(previous);
+        }
+    }
+
+    @Test void oversizedEncodedResponseIsCancelled() throws Exception {
+        first.createContext("/start", exchange -> {
+            byte[] payload = new byte[100000];
+            exchange.sendResponseHeaders(200, payload.length);
+            try { exchange.getResponseBody().write(payload); }
+            finally { exchange.close(); }
+        });
+        assertThrows(IOException.class, () -> new QqHttp().exchange(QqHttp.Request.get(start, Map.of(), 100, false)));
+    }
+
+    @Test void httpOnlyCookiesSurviveRedirectUnderGlobalCookieManager() throws Exception {
+        CookieHandler previous = CookieHandler.getDefault();
+        AtomicReference<String> sent = new AtomicReference<>();
+        first.createContext("/start", exchange -> {
+            exchange.getResponseHeaders().add("Location", "/landing");
+            exchange.getResponseHeaders().add("Set-Cookie", "p_skey=own-key; Path=/; HttpOnly");
+            exchange.sendResponseHeaders(302, -1); exchange.close();
+        });
+        first.createContext("/landing", exchange -> {
+            sent.set(exchange.getRequestHeaders().getFirst("Cookie"));
+            exchange.sendResponseHeaders(200, -1); exchange.close();
+        });
+        try {
+            CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ALL));
+            var response = new QqHttp().exchange(QqHttp.Request.get(start, Map.of(), 100, true));
+            assertEquals("own-key", QqLoginReply.cookies(response.values("Set-Cookie")).get("p_skey"));
+            assertTrue(sent.get().contains("p_skey=own-key"));
+        } finally { CookieHandler.setDefault(previous); }
+    }
 }

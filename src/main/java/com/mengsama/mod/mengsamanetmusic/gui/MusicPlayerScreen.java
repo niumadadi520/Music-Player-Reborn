@@ -32,8 +32,8 @@ import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -160,16 +160,16 @@ public class MusicPlayerScreen extends SharedMusicPlayerScreen<MusicPlayerMenu> 
         var content = skinLayout.content().at(cx, cy);
         var songContent = skinLayout.songContent().at(cx, cy);
         this.resultList = new SearchResultList(this.minecraft, songContent.width(), songContent.height(), songContent.y(), songContent.bottom(), ui.searchResultRowHeight);
-        this.resultList.setLeftPos(content.x());
+        this.resultList.setX(content.x());
         this.addWidget(this.resultList);
         this.playlistList = new PlaylistList(this.minecraft, songContent.width(), songContent.height(), songContent.y(), songContent.bottom(), ui.playlistRowHeight);
-        this.playlistList.setLeftPos(content.x());
+        this.playlistList.setX(content.x());
         this.addWidget(this.playlistList);
         this.lyricList = new LyricList(this.minecraft, content.width(), content.height(), content.y(), content.bottom(), ui.lyricRowHeight);
-        this.lyricList.setLeftPos(content.x());
+        this.lyricList.setX(content.x());
         this.addWidget(this.lyricList);
         this.favoriteList = new FavoriteSongList(this.minecraft, songContent.width(), songContent.height(), songContent.y(), songContent.bottom(), ui.playlistRowHeight, this::activateFavorite, message -> this.statusMessage = message);
-        this.favoriteList.setLeftPos(content.x());
+        this.favoriteList.setX(content.x());
         this.addWidget(this.favoriteList);
         initFavoriteTools(this::activateFavorite);
         var theme = skinLayout.settingsTheme().at(cx, cy);
@@ -618,7 +618,7 @@ public class MusicPlayerScreen extends SharedMusicPlayerScreen<MusicPlayerMenu> 
         if (this.qqLoginButton != null)
             this.qqLoginButton.visible = currentTab == TAB_SEARCH && searchSource != 0;
         if (this.searchBox != null)
-            this.searchBox.tick();
+            {}
         if (currentTab == TAB_LYRICS && this.lyricList != null) {
              
              
@@ -656,8 +656,8 @@ public class MusicPlayerScreen extends SharedMusicPlayerScreen<MusicPlayerMenu> 
 
         public SearchResultList(Minecraft mc, int w, int h, int top, int bottom, int itemH) {
             super(mc, w, h, top, bottom, itemH);
-            this.setRenderBackground(false);
-            this.setRenderTopAndBottom(false);
+            
+            
         }
 
         @Override
@@ -667,7 +667,7 @@ public class MusicPlayerScreen extends SharedMusicPlayerScreen<MusicPlayerMenu> 
 
         @Override
         protected int getScrollbarPosition() {
-            return this.getLeft() + this.getWidth() - 6;
+            return this.getX() + this.getWidth() - 6;
         }
 
         public void setResults(List<NetEaseSearchResult> results) {
@@ -730,8 +730,8 @@ public class MusicPlayerScreen extends SharedMusicPlayerScreen<MusicPlayerMenu> 
 
         public PlaylistList(Minecraft mc, int w, int h, int top, int bottom, int itemH) {
             super(mc, w, h, top, bottom, itemH);
-            this.setRenderBackground(false);
-            this.setRenderTopAndBottom(false);
+            
+            
         }
 
         @Override
@@ -741,7 +741,7 @@ public class MusicPlayerScreen extends SharedMusicPlayerScreen<MusicPlayerMenu> 
 
         @Override
         protected int getScrollbarPosition() {
-            return this.getLeft() + this.getWidth() - 6;
+            return this.getX() + this.getWidth() - 6;
         }
 
         public void refresh() {

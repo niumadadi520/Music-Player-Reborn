@@ -5,7 +5,7 @@ import com.mengsama.mod.mengsamanetmusic.compat.EntityMusicDevice;
 import com.mengsama.mod.mengsamanetmusic.compat.TouhouLittleMaidExtension;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.NetworkEvent;
+import com.mengsama.mod.mengsamanetmusic.platform.PacketContext;
 
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -22,8 +22,8 @@ public record ReturnToMaidGuiPacket(UUID maidId, int entityId, UUID instanceId) 
         return new ReturnToMaidGuiPacket(buf.readUUID(), buf.readInt(), buf.readUUID());
     }
 
-    public static void handle(ReturnToMaidGuiPacket packet, Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context context = supplier.get();
+    public static void handle(ReturnToMaidGuiPacket packet, Supplier<PacketContext> supplier) {
+        PacketContext context = supplier.get();
         ServerPlayer sender = context.getSender();
         if (sender != null) {
             context.enqueueWork(() -> {
@@ -36,6 +36,6 @@ public record ReturnToMaidGuiPacket(UUID maidId, int entityId, UUID instanceId) 
                 MaidMusicAccess.openGui(sender, entity);
             });
         }
-        context.setPacketHandled(true);
+        
     }
 }

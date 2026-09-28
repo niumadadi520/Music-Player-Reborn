@@ -28,7 +28,7 @@ class PackagedLicenseValidationTest {
             for (String entry : REQUIRED) {
                 assertNotNull(jar.getJarEntry(entry), entry + " is missing from release JAR");
             }
-            String metadata = new String(jar.getInputStream(jar.getJarEntry("META-INF/mods.toml")).readAllBytes(),
+            String metadata = new String(jar.getInputStream(jar.getJarEntry("META-INF/neoforge.mods.toml")).readAllBytes(),
                     StandardCharsets.UTF_8);
             assertTrue(metadata.contains("BSD-3-Clause (code)"));
             assertTrue(metadata.contains("CC BY-NC-SA 4.0 (assets)"));

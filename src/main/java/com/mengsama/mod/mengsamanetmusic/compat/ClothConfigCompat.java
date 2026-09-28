@@ -3,16 +3,15 @@ package com.mengsama.mod.mengsamanetmusic.compat;
 import com.mengsama.mod.mengsamanetmusic.config.ModConfig;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.client.ConfigScreenHandler;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.common.ForgeConfigSpec;
+
+import net.neoforged.fml.ModLoadingContext;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 public final class ClothConfigCompat {
-    private record Toggle(String title, ForgeConfigSpec.BooleanValue value) {}
+    private record Toggle(String title, ModConfigSpec.BooleanValue value) {}
     public static void registerModsPage() {
-        var factory = new ConfigScreenHandler.ConfigScreenFactory((client, parent) ->
-                getConfigBuilder().setParentScreen(parent).build());
-        ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class, () -> factory);
+        net.neoforged.fml.ModList.get().getModContainerById("mengsamanetmusic").orElseThrow().registerExtensionPoint(
+            net.neoforged.neoforge.client.gui.IConfigScreenFactory.class, (container,parent) -> getConfigBuilder().setParentScreen(parent).build());
     }
     public static ConfigBuilder getConfigBuilder() {
         var screen = ConfigBuilder.create().setTitle(Component.literal("音乐机设置"));

@@ -7,7 +7,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
  
-public final class AppleMusicAuthScreen extends Screen {
+public final class AppleMusicAuthScreen extends com.mengsama.mod.mengsamanetmusic.gui.ThemedOverlayScreen {
     private final Screen parent;
     private Button action;
     private long seenRevision = -1;
@@ -59,7 +59,7 @@ public final class AppleMusicAuthScreen extends Screen {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(graphics);
+        renderTransparentBackground(graphics);
         boolean themed=com.mengsama.mod.mengsamanetmusic.gui.theme.ThemeSkin.custom();
         if(themed)com.mengsama.mod.mengsamanetmusic.gui.theme.ThemeSkin.panel(graphics,Math.max(4,width/2-170),height/2-96,Math.min(340,width-8),196,26);
         graphics.drawCenteredString(font, title, width / 2, height / 2 - 82, themed?MusicPlayerSkin.title():0xFFFFFFFF);

@@ -10,16 +10,16 @@
       "item": "minecraft:pink_dye"
     },
     "C": {
-      "tag": "forge:ingots/copper"
+      "tag": "c:ingots/copper"
     },
     "R": {
       "item": "minecraft:redstone"
     },
     "I": {
-      "tag": "forge:ingots/iron"
+      "tag": "c:ingots/iron"
     }
   },
   "result": {
-    "item": "mengsamanetmusic:pink_bluetooth_case"
+    "id": "mengsamanetmusic:pink_bluetooth_case"
   }
 }

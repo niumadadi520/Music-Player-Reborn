@@ -32,7 +32,7 @@ class PixelMaterialIntegrationTest {
         try(var jar=new JarFile(System.getProperty("mengsama.releaseJar"))) {
             for(var entry:fixture().getAsJsonObject("models").entrySet()) {
                 var name=entry.getKey();var expected=entry.getValue().getAsJsonObject();var raw=geometry(jar,name);
-                var model=BakedModelFactory.DEFAULT_FACTORY.constructGeoModel(GeometryTree.fromModel(JsonUtil.GEO_GSON.fromJson(raw,Model.class)));
+                var model=BakedModelFactory.DEFAULT_FACTORY.constructGeoModel(GeometryTree.fromModel(software.bernie.geckolib.loading.json.typeadapter.KeyFramesAdapter.GEO_GSON.fromJson(raw,Model.class)));
                 assertFalse(model.topLevelBones().isEmpty(),name);
                 var geo=raw.getAsJsonArray("minecraft:geometry").get(0).getAsJsonObject();var desc=geo.getAsJsonObject("description");
                 var image=ImageIO.read(new ByteArrayInputStream(bytes(jar,"textures/"+expected.get("texture").getAsString())));

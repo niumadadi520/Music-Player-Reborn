@@ -8,8 +8,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.client.event.ScreenEvent;
-import net.minecraftforge.common.MinecraftForge;
+import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import net.p3pp3rf1y.sophisticatedbackpacks.client.gui.BackpackScreen;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import java.util.WeakHashMap;
@@ -24,10 +24,10 @@ public final class BackpackClient {
     }
     public static boolean hasCharm(RenderInfo info) { return info.getUpgradeItems().stream().anyMatch(s -> s.getItem() instanceof WalkmanUpgradeItem); }
     public static void register() {
-        MinecraftForge.EVENT_BUS.addListener(BackpackClient::init);
-        MinecraftForge.EVENT_BUS.addListener(BackpackClient::render);
-        MinecraftForge.EVENT_BUS.addListener(BackpackCharmRenderer::clientTick);
-        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) -> { BUTTONS.clear(); BackpackCharmRenderer.clear(); });
+        NeoForge.EVENT_BUS.addListener(BackpackClient::init);
+        NeoForge.EVENT_BUS.addListener(BackpackClient::render);
+        NeoForge.EVENT_BUS.addListener(BackpackCharmRenderer::clientTick);
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) -> { BUTTONS.clear(); BackpackCharmRenderer.clear(); });
     }
     private static void init(ScreenEvent.Init.Post event) {
         if (!(event.getScreen() instanceof BackpackScreen screen)) return;

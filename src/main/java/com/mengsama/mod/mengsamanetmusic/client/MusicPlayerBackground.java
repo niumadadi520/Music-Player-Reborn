@@ -8,9 +8,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.loading.FMLPaths;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.fml.loading.FMLPaths;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -32,7 +32,7 @@ public final class MusicPlayerBackground {
             "background.png", "background.jpg", "background.jpeg", "background.bmp", "background.gif"
     };
     private static final ResourceLocation LOCATION =
-            new ResourceLocation(MengSamaNetMusic.MOD_ID, "local_music_player_background");
+            ResourceLocation.fromNamespaceAndPath(MengSamaNetMusic.MOD_ID, "local_music_player_background");
     private static final AtomicLong REQUEST = new AtomicLong();
 
     private static DynamicTexture texture;

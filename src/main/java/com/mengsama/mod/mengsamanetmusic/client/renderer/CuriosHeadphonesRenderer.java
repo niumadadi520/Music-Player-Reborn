@@ -25,6 +25,6 @@ public final class CuriosHeadphonesRenderer implements ICurioRenderer {
                 || context.entity().getItemBySlot(EquipmentSlot.HEAD).getItem() instanceof PinkHeadphonesItem) return;
         renderer.prepForRender(context.entity(), stack, EquipmentSlot.HEAD, humanoid);
         var consumer = buffers.getBuffer(renderer.renderType(renderer.getTextureLocation((PinkHeadphonesItem) stack.getItem())));
-        renderer.renderToBuffer(pose, consumer, light, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
+        renderer.renderToBuffer(pose, consumer, light, OverlayTexture.NO_OVERLAY, -1);
     }
 }

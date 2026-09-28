@@ -15,12 +15,12 @@ import net.minecraft.resources.ResourceLocation;
 import java.io.ByteArrayInputStream;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class QqLoginScreen extends Screen {
+public class QqLoginScreen extends com.mengsama.mod.mengsamanetmusic.gui.ThemedOverlayScreen {
     private static final AtomicLong TEXTURE_IDS = new AtomicLong();
     private final Screen parent;
     private final QqLoginBackend backend;
     private final QqLoginRequestState requests = new QqLoginRequestState();
-    private final ResourceLocation qrLocation = new ResourceLocation(MengSamaNetMusic.MOD_ID, "qq_login_qr/" + TEXTURE_IDS.incrementAndGet());
+    private final ResourceLocation qrLocation = ResourceLocation.fromNamespaceAndPath(MengSamaNetMusic.MOD_ID, "qq_login_qr/" + TEXTURE_IDS.incrementAndGet());
     private DynamicTexture qrTexture;
     private int qrWidth, qrHeight;
     private QqLoginService.LoginState state = QqLoginService.LoginState.IDLE;
@@ -143,7 +143,7 @@ public class QqLoginScreen extends Screen {
     }
 
     @Override public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(graphics);
+        renderTransparentBackground(graphics);
         QqLoginSkin.renderPanel(graphics, layout);
         var titleBounds = layout.title();
         graphics.drawCenteredString(font, font.plainSubstrByWidth(title.getString(), titleBounds.width()),

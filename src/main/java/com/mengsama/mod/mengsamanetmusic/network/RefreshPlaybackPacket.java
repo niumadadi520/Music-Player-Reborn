@@ -7,7 +7,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.network.NetworkEvent;
+import com.mengsama.mod.mengsamanetmusic.platform.PacketContext;
 
 import java.util.function.Supplier;
 
@@ -43,8 +43,8 @@ public record RefreshPlaybackPacket(int entityId, BlockPos blockPos, String targ
                 SongInfo.deserializeNBT(buf.readNbt()));
     }
 
-    public static void handle(RefreshPlaybackPacket packet, Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context context = supplier.get();
+    public static void handle(RefreshPlaybackPacket packet, Supplier<PacketContext> supplier) {
+        PacketContext context = supplier.get();
         var sender = context.getSender();
         if (sender != null) context.enqueueWork(() -> {
             if (com.mengsama.mod.mengsamanetmusic.earbuds.EarbudSessions.refreshShared(sender, packet)) return;
@@ -81,7 +81,7 @@ public record RefreshPlaybackPacket(int entityId, BlockPos blockPos, String targ
                 MusicPlayerItem.setPlayToClient(device, authoritative, player, packet.requestNonce);
             else MusicPlayerItem.setPlayToEntity(device, authoritative, living, packet.requestNonce);
         });
-        context.setPacketHandled(true);
+        
     }
 
     private static SongInfo songFromCd(net.minecraft.world.item.ItemStack cd) {

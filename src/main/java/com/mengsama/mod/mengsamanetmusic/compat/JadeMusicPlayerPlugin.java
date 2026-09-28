@@ -16,7 +16,7 @@ import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.IBlockComponentProvider;
 import snownee.jade.api.ITooltip;
 import snownee.jade.api.IWailaClientRegistration;
-import snownee.jade.api.Identifiers;
+
 import snownee.jade.api.IWailaCommonRegistration;
 import snownee.jade.api.IWailaPlugin;
 import snownee.jade.api.WailaPlugin;
@@ -42,7 +42,7 @@ public final class JadeMusicPlayerPlugin implements IWailaPlugin {
          
         registration.addTooltipCollectedCallback((tooltip, accessor) -> {
             if (accessor instanceof BlockAccessor block && block.getBlockEntity() instanceof IMusicPlayerBlockEntity) {
-                tooltip.remove(Identifiers.UNIVERSAL_ITEM_STORAGE);
+                tooltip.getTooltip().remove(snownee.jade.addon.universal.ItemStorageProvider.getBlock().getUid());
             }
         });
     }
@@ -50,7 +50,7 @@ public final class JadeMusicPlayerPlugin implements IWailaPlugin {
     enum Provider implements IBlockComponentProvider, snownee.jade.api.IServerDataProvider<BlockAccessor> {
         INSTANCE;
 
-        private static final ResourceLocation UID = new ResourceLocation(MengSamaNetMusic.MOD_ID, "music_player_info");
+        private static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(MengSamaNetMusic.MOD_ID, "music_player_info");
         private static final String DATA_KEY = "MengSamaMusic";
 
         @Override
@@ -83,7 +83,7 @@ public final class JadeMusicPlayerPlugin implements IWailaPlugin {
         public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
              
              
-            tooltip.remove(Identifiers.UNIVERSAL_ITEM_STORAGE);
+            tooltip.remove(snownee.jade.addon.universal.ItemStorageProvider.getBlock().getUid());
 
             if (accessor.getBlockEntity() instanceof com.mengsama.mod.mengsamanetmusic.karaoke.KaraokeBlockEntity device
                     && !device.isSpeaker()) return;
@@ -96,7 +96,7 @@ public final class JadeMusicPlayerPlugin implements IWailaPlugin {
                 return;
             }
 
-            var elements = tooltip.getElementHelper();
+            var elements = snownee.jade.api.ui.IElementHelper.get();
             ITooltip text = elements.tooltip();
             Component title = Component.literal(data.title().isEmpty() ? "-" : data.title())
                     .withStyle(ChatFormatting.WHITE);
@@ -118,8 +118,8 @@ public final class JadeMusicPlayerPlugin implements IWailaPlugin {
             ITooltip row = elements.tooltip();
             if (!data.coverUrl().isEmpty()) row.append(new JadeSongCoverElement(data.coverUrl()));
             if (!data.coverUrl().isEmpty()) row.append(elements.spacer(5, 1));
-            row.append(elements.box(text, snownee.jade.api.ui.IBoxStyle.Empty.INSTANCE));
-            tooltip.add(elements.box(row, snownee.jade.api.ui.IBoxStyle.Empty.INSTANCE));
+            row.append(elements.box(text, snownee.jade.api.ui.BoxStyle.getTransparent()));
+            tooltip.add(elements.box(row, snownee.jade.api.ui.BoxStyle.getTransparent()));
         }
 
         @Override

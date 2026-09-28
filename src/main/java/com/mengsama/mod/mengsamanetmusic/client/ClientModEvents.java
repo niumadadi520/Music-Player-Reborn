@@ -1,5 +1,6 @@
 package com.mengsama.mod.mengsamanetmusic.client;
 
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.mengsama.mod.mengsamanetmusic.config.ConfigManager;
 import com.mengsama.mod.mengsamanetmusic.config.MusicPlayerUiConfig;
 import com.mengsama.mod.mengsamanetmusic.config.MusicHudConfig;
@@ -12,24 +13,45 @@ import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.Unit;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
-import net.minecraftforge.client.event.RenderGuiEvent;
-import net.minecraftforge.client.event.sound.PlayStreamingSourceEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.event.RenderGuiEvent;
+import net.neoforged.neoforge.client.event.sound.PlayStreamingSourceEvent;
+import net.neoforged.neoforge.event.tick.*;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.common.Mod;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 @OnlyIn(Dist.CLIENT)
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ClientModEvents {
 
+    @SubscribeEvent
+    public static void registerItemExtensions(net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent event) {
+        for (var item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
+            java.util.function.Consumer<net.neoforged.neoforge.client.extensions.common.IClientItemExtensions> register = extension -> event.registerItem(extension, item);
+            if (item instanceof com.mengsama.mod.mengsamanetmusic.item.MusicDeviceBlockItem device) device.createClientExtensions(register);
+            else if (item instanceof com.mengsama.mod.mengsamanetmusic.item.PinkHeadphonesItem headphones) headphones.createClientExtensions(register);
+            else if (item instanceof com.mengsama.mod.mengsamanetmusic.earbuds.EarbudItem earbud) earbud.createClientExtensions(register);
+        }
+    }
+
+    @SubscribeEvent
+    public static void registerScreens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) {
+event.register(ModMenuTypes.EARBUDS.get(), com.mengsama.mod.mengsamanetmusic.earbuds.client.EarbudScreen::new);
+event.register(
+                    ModMenuTypes.MUSIC_PLAYER.get(),
+                    MusicPlayerScreen::new);
+event.register(
+                    ModMenuTypes.MUSIC_PLAYER_PLAYLIST.get(),
+                    MusicPlayerPlaylistScreen::new);
+    }
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
 
@@ -38,21 +60,17 @@ public class ClientModEvents {
         MusicPlayerUiConfig.load();
         MusicHudConfig.load();
 
-        if (net.minecraftforge.fml.ModList.get().isLoaded("cloth_config"))
+        if (net.neoforged.fml.ModList.get().isLoaded("cloth_config"))
             com.mengsama.mod.mengsamanetmusic.compat.ClothConfigCompat.registerModsPage();
 
         event.enqueueWork(() -> {
-            if (net.minecraftforge.fml.ModList.get().isLoaded("curios"))
+            if (net.neoforged.fml.ModList.get().isLoaded("curios"))
                 com.mengsama.mod.mengsamanetmusic.client.renderer.CuriosHeadphonesRenderer.register();
-            net.minecraft.client.gui.screens.MenuScreens.register(ModMenuTypes.EARBUDS.get(), com.mengsama.mod.mengsamanetmusic.earbuds.client.EarbudScreen::new);
+            
             MusicPlayerBackground.reload();
-            net.minecraft.client.gui.screens.MenuScreens.register(
-                    ModMenuTypes.MUSIC_PLAYER.get(),
-                    MusicPlayerScreen::new);
+            
 
-            net.minecraft.client.gui.screens.MenuScreens.register(
-                    ModMenuTypes.MUSIC_PLAYER_PLAYLIST.get(),
-                    MusicPlayerPlaylistScreen::new);
+            
         });
     }
 
@@ -84,14 +102,14 @@ public class ClientModEvents {
         });
     }
 
-    @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
+    @EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
     public static class ForgeEvents {
         @SubscribeEvent
-        public static void onLogin(net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggingIn event) {
+        public static void onLogin(net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingIn event) {
             com.mengsama.mod.mengsamanetmusic.client.audio.ClientMusicPlayback.resetSession();
         }
         @SubscribeEvent
-        public static void onLogout(net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) {
+        public static void onLogout(net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) {
             com.mengsama.mod.mengsamanetmusic.client.audio.ClientMusicPlayback.resetSession();
             com.mengsama.mod.mengsamanetmusic.network.SyncVipCookiePacket.CLIENT_HAS_VIP_COOKIE = false;
         }
@@ -108,8 +126,8 @@ public class ClientModEvents {
         }
 
         @SubscribeEvent
-        public static void onClientTick(TickEvent.ClientTickEvent event) {
-            if (event.phase != TickEvent.Phase.END) return;
+        public static void onClientTick(ClientTickEvent.Post event) {
+            
             Minecraft mc = Minecraft.getInstance();
             MusicClientKeys.consumeHudEditor(() -> {
                 if (mc.screen == null) MoveHudScreen.open();

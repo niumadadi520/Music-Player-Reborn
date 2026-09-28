@@ -13,8 +13,9 @@ import com.mengsama.mod.mengsamanetmusic.config.ModConfig;
 import com.mengsama.mod.mengsamanetmusic.item.MusicPlayerItem;
 import com.mengsama.mod.mengsamanetmusic.util.AsyncIoExecutor;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.tick.*;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.UUID;
@@ -70,8 +71,8 @@ public final class MaidLyricSynchronizer {
     }
 
     @SubscribeEvent
-    public static void onServerTick(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || event.getServer().getTickCount() % 2 != 0)
+    public static void onServerTick(ServerTickEvent.Post event) {
+        if (event.getServer().getTickCount() % 2 != 0)
             return;
         for (var entry : SESSIONS.entrySet()) {
             UUID maidId = entry.getKey();

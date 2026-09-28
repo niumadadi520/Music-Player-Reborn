@@ -2,9 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "WIP",
-    " R ",
-    "CCC"
+    " WP",
+    " IR",
+    " C "
   ],
   "key": {
     "C": {
@@ -24,7 +24,7 @@
     }
   },
   "result": {
-    "item": "mengsamanetmusic:pink_microphone",
-    "count": 1
+    "count": 1,
+    "id": "mengsamanetmusic:pink_handheld_microphone"
   }
 }

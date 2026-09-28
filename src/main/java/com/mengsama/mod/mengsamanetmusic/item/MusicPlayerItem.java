@@ -1,5 +1,6 @@
 package com.mengsama.mod.mengsamanetmusic.item;
 
+import com.mengsama.mod.mengsamanetmusic.platform.ItemData;
 import com.mengsama.mod.mengsamanetmusic.MengSamaNetMusic;
 import com.mengsama.mod.mengsamanetmusic.api.SongInfo;
 import com.mengsama.mod.mengsamanetmusic.block.PortableMusicPlayerBlock;
@@ -32,8 +33,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraftforge.network.NetworkHooks;
-import net.minecraftforge.network.PacketDistributor;
+
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -108,7 +109,7 @@ public class MusicPlayerItem extends MusicDeviceBlockItem {
 
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
             java.util.UUID instanceId = getOrCreateInstanceId(stack);
-            NetworkHooks.openScreen(serverPlayer, new MenuProvider() {
+            serverPlayer.openMenu(new MenuProvider() {
                 @Override
                 public @NotNull Component getDisplayName() {
                     return Component.translatable("item.mengsamanetmusic.music_player");
@@ -136,8 +137,8 @@ public class MusicPlayerItem extends MusicDeviceBlockItem {
         if (!isPlay(stack) || isPaused(stack)) return;
         tickTime(stack);
         int currentTime = getCurrentTime(stack);
-        if (currentTime == 0 && stack.getOrCreateTag().getBoolean(AUTO_ADVANCE_ARMED_KEY)) {
-            stack.getOrCreateTag().putBoolean(AUTO_ADVANCE_ARMED_KEY, false);
+        if (currentTime == 0 && ItemData.get(stack).getBoolean(AUTO_ADVANCE_ARMED_KEY)) {
+            ItemData.putBoolean(stack, AUTO_ADVANCE_ARMED_KEY, false);
             advanceToNext(stack);
             ItemStack cd = getCurrentCd(stack);
             if (cd.isEmpty()) {
@@ -511,10 +512,10 @@ public class MusicPlayerItem extends MusicDeviceBlockItem {
 
     public static void saveAllCdsToItem(ItemStack playerItem, NonNullList<ItemStack> cds) {
         NonNullList<ItemStack> packed = packPlaylist(cds);
-        CompoundTag previous = playerItem.getTagElement("Item");
+        CompoundTag previous = ItemData.child(playerItem, "Item");
         CompoundTag nbt = previous == null ? new CompoundTag() : previous.copy();
-        ContainerHelper.saveAllItems(nbt, packed);
-        playerItem.addTagElement("Item", nbt);
+        ContainerHelper.saveAllItems(nbt, packed, com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup());
+        ItemData.put(playerItem, "Item", nbt);
         int first = findFirstNonEmpty(packed);
         int last = findLastNonEmpty(packed);
         int index = getPlayIndex(playerItem);
@@ -539,46 +540,46 @@ public class MusicPlayerItem extends MusicDeviceBlockItem {
 
     public static void saveCdToItem(ItemStack playerItem, int slot, ItemStack cd) {
         NonNullList<ItemStack> items = NonNullList.withSize(CD_SLOTS, ItemStack.EMPTY);
-        CompoundTag existing = playerItem.getTagElement("Item");
+        CompoundTag existing = ItemData.child(playerItem, "Item");
         if (existing != null) {
-            ContainerHelper.loadAllItems(existing, items);
+            com.mengsama.mod.mengsamanetmusic.platform.StoredItems.loadAll(existing, items, com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup());
         }
         items.set(slot, cd);
         saveAllCdsToItem(playerItem, items);
     }
 
     public static int getPlayIndex(ItemStack stack) {
-        if (stack.hasTag() && stack.getTag().contains(PLAY_INDEX_KEY)) {
-            return stack.getTag().getInt(PLAY_INDEX_KEY);
+        if (ItemData.has(stack) && ItemData.nullable(stack).contains(PLAY_INDEX_KEY)) {
+            return ItemData.nullable(stack).getInt(PLAY_INDEX_KEY);
         }
         return 0;
     }
 
     public static void setPlayIndex(ItemStack stack, int index) {
-        stack.getOrCreateTag().putInt(PLAY_INDEX_KEY, index);
+        ItemData.putInt(stack, PLAY_INDEX_KEY, index);
     }
 
     public static PlayMode getPlayMode(ItemStack stack) {
-        if (stack.hasTag() && stack.getTag().contains(PLAY_MODE_KEY)) {
-            return PlayMode.getMode(stack.getTag().getInt(PLAY_MODE_KEY));
+        if (ItemData.has(stack) && ItemData.nullable(stack).contains(PLAY_MODE_KEY)) {
+            return PlayMode.getMode(ItemData.nullable(stack).getInt(PLAY_MODE_KEY));
         }
         return PlayMode.SEQUENTIAL;
     }
 
     public static void setPlayMode(ItemStack stack, PlayMode mode) {
-        stack.getOrCreateTag().putInt(PLAY_MODE_KEY, mode.ordinal());
+        ItemData.putInt(stack, PLAY_MODE_KEY, mode.ordinal());
     }
 
     public static boolean isPlay(ItemStack stack) {
-        if (stack.hasTag() && stack.getTag().contains(IS_PLAY_KEY)) {
-            return stack.getTag().getBoolean(IS_PLAY_KEY);
+        if (ItemData.has(stack) && ItemData.nullable(stack).contains(IS_PLAY_KEY)) {
+            return ItemData.nullable(stack).getBoolean(IS_PLAY_KEY);
         }
         return false;
     }
 
     public static void setPlay(ItemStack stack, boolean play) {
-        stack.getOrCreateTag().putBoolean(IS_PLAY_KEY, play);
-        if (!play) stack.getOrCreateTag().putBoolean(IS_PAUSED_KEY, false);
+        ItemData.putBoolean(stack, IS_PLAY_KEY, play);
+        if (!play) ItemData.putBoolean(stack, IS_PAUSED_KEY, false);
     }
 
      
@@ -588,7 +589,7 @@ public class MusicPlayerItem extends MusicDeviceBlockItem {
         if (isPlay(stack)) PLAY_REQUEST_GENERATIONS.computeIfAbsent(player.getUUID(), ignored -> new java.util.concurrent.atomic.AtomicLong())
                 .set(com.mengsama.mod.mengsamanetmusic.network.PlaybackGenerations.next());
         setPlay(stack, false); setPaused(stack, false); setCurrentTime(stack, 0);
-        stack.getOrCreateTag().remove(AUTO_ADVANCE_ARMED_KEY);
+        ItemData.remove(stack, AUTO_ADVANCE_ARMED_KEY);
         com.mengsama.mod.mengsamanetmusic.network.PlaybackRefreshSessions.release(target);
         broadcastStop(stack, player);
     }
@@ -632,16 +633,16 @@ public class MusicPlayerItem extends MusicDeviceBlockItem {
     }
 
     public static boolean isPaused(ItemStack stack) {
-        return stack.hasTag() && stack.getTag().getBoolean(IS_PAUSED_KEY);
+        return ItemData.has(stack) && ItemData.nullable(stack).getBoolean(IS_PAUSED_KEY);
     }
 
      
     public static void setPaused(ItemStack stack, boolean paused) {
-        stack.getOrCreateTag().putBoolean(IS_PAUSED_KEY, paused);
+        ItemData.putBoolean(stack, IS_PAUSED_KEY, paused);
     }
 
     public static boolean isBroadcast(ItemStack stack) {
-        return !com.mengsama.mod.mengsamanetmusic.earbuds.EarbudSlots.installed(stack) && (!stack.hasTag() || !stack.getTag().contains(BROADCAST_KEY) || stack.getTag().getBoolean(BROADCAST_KEY));
+        return !com.mengsama.mod.mengsamanetmusic.earbuds.EarbudSlots.installed(stack) && (!ItemData.has(stack) || !ItemData.nullable(stack).contains(BROADCAST_KEY) || ItemData.nullable(stack).getBoolean(BROADCAST_KEY));
     }
 
      
@@ -667,26 +668,26 @@ public class MusicPlayerItem extends MusicDeviceBlockItem {
     }
 
     public static void setBroadcast(ItemStack stack, boolean broadcast) {
-        stack.getOrCreateTag().putBoolean(BROADCAST_KEY, broadcast);
+        ItemData.putBoolean(stack, BROADCAST_KEY, broadcast);
     }
 
     public static int getCurrentTime(ItemStack stack) {
-        if (stack.hasTag() && stack.getTag().contains(CURRENT_TIME_KEY)) {
-            return stack.getTag().getInt(CURRENT_TIME_KEY);
+        if (ItemData.has(stack) && ItemData.nullable(stack).contains(CURRENT_TIME_KEY)) {
+            return ItemData.nullable(stack).getInt(CURRENT_TIME_KEY);
         }
         return 0;
     }
 
     public static void setCurrentTime(ItemStack stack, int time) {
-        stack.getOrCreateTag().putInt(CURRENT_TIME_KEY, time);
-        stack.getOrCreateTag().putBoolean(AUTO_ADVANCE_ARMED_KEY, time > 0);
+        ItemData.putInt(stack, CURRENT_TIME_KEY, time);
+        ItemData.putBoolean(stack, AUTO_ADVANCE_ARMED_KEY, time > 0);
     }
 
     public static void tickTime(ItemStack stack) {
         int ct = getCurrentTime(stack);
         if (ct > 0) {
              
-            stack.getOrCreateTag().putInt(CURRENT_TIME_KEY, ct - 1);
+            ItemData.putInt(stack, CURRENT_TIME_KEY, ct - 1);
         }
     }
 
@@ -700,7 +701,7 @@ public class MusicPlayerItem extends MusicDeviceBlockItem {
      
     @Nullable
     public static java.util.UUID getInstanceId(ItemStack stack) {
-        CompoundTag tag = stack.getTag();
+        CompoundTag tag = ItemData.nullable(stack);
         return tag != null && tag.hasUUID(INSTANCE_ID_KEY) ? tag.getUUID(INSTANCE_ID_KEY) : null;
     }
 
@@ -708,7 +709,7 @@ public class MusicPlayerItem extends MusicDeviceBlockItem {
         java.util.UUID existing = getInstanceId(stack);
         if (existing != null) return existing;
         java.util.UUID created = java.util.UUID.randomUUID();
-        stack.getOrCreateTag().putUUID(INSTANCE_ID_KEY, created);
+        ItemData.putUUID(stack, INSTANCE_ID_KEY, created);
         return created;
     }
 
@@ -729,9 +730,9 @@ public class MusicPlayerItem extends MusicDeviceBlockItem {
 
     public static NonNullList<ItemStack> loadAllCds(ItemStack stack) {
         NonNullList<ItemStack> items = NonNullList.withSize(CD_SLOTS, ItemStack.EMPTY);
-        CompoundTag nbt = stack.getTagElement("Item");
+        CompoundTag nbt = ItemData.child(stack, "Item");
         if (nbt != null) {
-            ContainerHelper.loadAllItems(nbt, items);
+            com.mengsama.mod.mengsamanetmusic.platform.StoredItems.loadAll(nbt, items, com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup());
         }
         return items;
     }
@@ -786,8 +787,9 @@ public class MusicPlayerItem extends MusicDeviceBlockItem {
     }
 
     public static void saveAllCdsPreservingSlots(ItemStack stack, NonNullList<ItemStack> cds) {
-        CompoundTag nbt = stack.getOrCreateTagElement("Item");
-        ContainerHelper.saveAllItems(nbt, cds);
+        CompoundTag nbt = ItemData.childOrEmpty(stack, "Item");
+        ContainerHelper.saveAllItems(nbt, cds, com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup());
+        ItemData.put(stack, "Item", nbt);
     }
 
     private static int findFirstNonEmpty(NonNullList<ItemStack> cds) {

@@ -1,38 +1,38 @@
 package com.mengsama.mod.mengsamanetmusic.config;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 import java.net.Proxy;
 
 public class ModConfig {
 
-    public static ForgeConfigSpec.BooleanValue ENABLE_STEREO;
-    public static ForgeConfigSpec.EnumValue<Proxy.Type> PROXY_TYPE;
-    public static ForgeConfigSpec.ConfigValue<String> PROXY_ADDRESS;
+    public static ModConfigSpec.BooleanValue ENABLE_STEREO;
+    public static ModConfigSpec.EnumValue<Proxy.Type> PROXY_TYPE;
+    public static ModConfigSpec.ConfigValue<String> PROXY_ADDRESS;
 
-    public static ForgeConfigSpec.BooleanValue ENABLE_PLAYER_LYRICS;
-    public static ForgeConfigSpec.BooleanValue ENABLE_MAID_LYRICS;
-    public static ForgeConfigSpec.ConfigValue<String> ORIGINAL_PLAYER_LYRICS_COLOR;
-    public static ForgeConfigSpec.ConfigValue<String> TRANSLATED_PLAYER_LYRICS_COLOR;
-    public static ForgeConfigSpec.ConfigValue<String> ORIGINAL_MAID_LYRICS_COLOR;
-    public static ForgeConfigSpec.ConfigValue<String> TRANSLATED_MAID_LYRICS_COLOR;
+    public static ModConfigSpec.BooleanValue ENABLE_PLAYER_LYRICS;
+    public static ModConfigSpec.BooleanValue ENABLE_MAID_LYRICS;
+    public static ModConfigSpec.ConfigValue<String> ORIGINAL_PLAYER_LYRICS_COLOR;
+    public static ModConfigSpec.ConfigValue<String> TRANSLATED_PLAYER_LYRICS_COLOR;
+    public static ModConfigSpec.ConfigValue<String> ORIGINAL_MAID_LYRICS_COLOR;
+    public static ModConfigSpec.ConfigValue<String> TRANSLATED_MAID_LYRICS_COLOR;
 
-    public static ForgeConfigSpec.ConfigValue<String> NET_EASE_COOKIE;
-    public static ForgeConfigSpec.ConfigValue<String> NET_EASE_MUSIC_LEVEL;
+    public static ModConfigSpec.ConfigValue<String> NET_EASE_COOKIE;
+    public static ModConfigSpec.ConfigValue<String> NET_EASE_MUSIC_LEVEL;
 
-    public static ForgeConfigSpec.ConfigValue<String> MUSIC_PROVIDER;
-    public static ForgeConfigSpec.ConfigValue<String> QQ_VIP_COOKIE;
+    public static ModConfigSpec.ConfigValue<String> MUSIC_PROVIDER;
+    public static ModConfigSpec.ConfigValue<String> QQ_VIP_COOKIE;
      
-    public static ForgeConfigSpec.ConfigValue<String> APPLE_MUSICKIT_TOKEN;
-    public static ForgeConfigSpec.ConfigValue<String> MUSIC_QUALITY;
+    public static ModConfigSpec.ConfigValue<String> APPLE_MUSICKIT_TOKEN;
+    public static ModConfigSpec.ConfigValue<String> MUSIC_QUALITY;
 
-    public static ForgeConfigSpec.BooleanValue DEBUG_MODE;
-    public static ForgeConfigSpec.BooleanValue ENABLE_MUSIC_HUD;
-    public static ForgeConfigSpec.IntValue MUSIC_HUD_X;
-    public static ForgeConfigSpec.IntValue MUSIC_HUD_Y;
+    public static ModConfigSpec.BooleanValue DEBUG_MODE;
+    public static ModConfigSpec.BooleanValue ENABLE_MUSIC_HUD;
+    public static ModConfigSpec.IntValue MUSIC_HUD_X;
+    public static ModConfigSpec.IntValue MUSIC_HUD_Y;
 
-    private static ForgeConfigSpec spec;
-    public static synchronized ForgeConfigSpec init() {
+    private static ModConfigSpec spec;
+    public static synchronized ModConfigSpec init() {
         if (spec != null) return spec;
         Schema schema = new Schema();
         ENABLE_STEREO = schema.flag("general", "EnableStereo", true);
@@ -58,14 +58,14 @@ public class ModConfig {
     }
     public static void save() { if (spec != null && spec.isLoaded()) spec.save(); }
     private static final class Schema {
-        final ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
-        ForgeConfigSpec.BooleanValue flag(String section, String key, boolean initial) {
+        final ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+        ModConfigSpec.BooleanValue flag(String section, String key, boolean initial) {
             return builder.define(java.util.List.of(section, key), initial);
         }
-        ForgeConfigSpec.ConfigValue<String> text(String section, String key, String initial) {
+        ModConfigSpec.ConfigValue<String> text(String section, String key, String initial) {
             return builder.define(java.util.List.of(section, key), initial);
         }
-        ForgeConfigSpec.IntValue coordinate(String key, int bound) {
+        ModConfigSpec.IntValue coordinate(String key, int bound) {
             return builder.defineInRange(java.util.List.of("music_hud", key), 5, 0, bound);
         }
     }

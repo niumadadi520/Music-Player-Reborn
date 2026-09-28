@@ -9,7 +9,7 @@ import org.lwjgl.opengl.GL14;
 
  
 public final class RosewoodHudSkin {
-    public static final ResourceLocation TEXTURE = new ResourceLocation("mengsamanetmusic", "textures/gui/rosewood_hud.png");
+    public static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("mengsamanetmusic", "textures/gui/rosewood_hud.png");
     public static final int TEXTURE_WIDTH = 2103, TEXTURE_HEIGHT = 748;
     private record Source(int x, int y, int width, int height) {}
     private static final Source OUTER = new Source(53, 76, 1996, 631);

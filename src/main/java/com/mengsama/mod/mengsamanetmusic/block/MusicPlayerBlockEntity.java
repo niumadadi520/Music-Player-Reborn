@@ -7,9 +7,9 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import software.bernie.geckolib.animatable.GeoBlockEntity;
-import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.core.animation.AnimatableManager;
-import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
  
@@ -22,7 +22,7 @@ public class MusicPlayerBlockEntity extends MusicDeviceEntity implements GeoBloc
         controllers.add(new AnimationController<>(this, "playback", 0,
                 frame -> frame.setAndContinue(PlacedMusicAnimations.gramophone(isPlay(), isPaused()))));
     }
-    @Override public AABB getRenderBoundingBox() { return new AABB(worldPosition).inflate(0.75, 0, 0.75).expandTowards(0, 1.2, 0); }
+    public AABB getRenderBoundingBox() { return new AABB(worldPosition).inflate(0.75, 0, 0.75).expandTowards(0, 1.2, 0); }
     public static void tick(Level world, BlockPos position, BlockState state, MusicPlayerBlockEntity device) {
         boolean repeat = !state.hasProperty(MusicPlayerBlock.CYCLE_DISABLE) || !state.getValue(MusicPlayerBlock.CYCLE_DISABLE);
         device.tickPlayback(repeat);

@@ -15,12 +15,12 @@ class ClientReloadLifecycleTest {
         }
         assertEquals(0, calls, "Resource reload must not register a menu screen a second time");
     }
-    @Test void screensRemainRegisteredInClientSetup() throws Exception {
+    @Test void screensRegisteredInNeoForgeMenuEvent() throws Exception {
         int calls = 0;
         for (MethodNode method : read("ClientModEvents.class").methods) for (var instruction : method.instructions) {
-            if (instruction instanceof MethodInsnNode call && call.owner.equals("net/minecraft/client/gui/screens/MenuScreens")
-                    && call.desc.contains("ScreenConstructor")) {
-                assertTrue(method.name.startsWith("lambda$onClientSetup$")); calls++;
+            if (instruction instanceof MethodInsnNode call && call.owner.equals("net/neoforged/neoforge/client/event/RegisterMenuScreensEvent")
+                    && call.name.equals("register")) {
+                assertTrue(method.name.equals("registerScreens")); calls++;
             }
         }
         assertEquals(3, calls, "Music player, playlist and earbuds screens must all remain available");

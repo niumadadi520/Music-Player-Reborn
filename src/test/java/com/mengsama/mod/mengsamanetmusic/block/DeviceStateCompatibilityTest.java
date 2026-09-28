@@ -1,14 +1,15 @@
 package com.mengsama.mod.mengsamanetmusic.block;
 
+import com.mengsama.mod.mengsamanetmusic.platform.ItemData;
 import net.minecraft.nbt.*;
 import net.minecraft.world.item.*;
-import net.minecraftforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DeviceStateCompatibilityTest {
     @BeforeAll static void bootstrap() throws Exception {
-        net.minecraft.SharedConstants.tryDetectVersion();
+        com.mengsama.mod.mengsamanetmusic.testsupport.HeadlessEnvironment.initialize(); net.minecraft.SharedConstants.tryDetectVersion();
         var initialized = net.minecraft.server.Bootstrap.class.getDeclaredField("isBootstrapped");
         initialized.setAccessible(true); initialized.setBoolean(null, true);
         Class.forName("net.minecraft.core.registries.BuiltInRegistries");
@@ -17,8 +18,8 @@ class DeviceStateCompatibilityTest {
         ItemStackHandler oldInventory = new ItemStackHandler(54);
         for (int i = 0; i < 54; i++) {
             ItemStack item = new ItemStack(Items.MUSIC_DISC_13);
-            item.getOrCreateTag().putInt("index", 2);
-            item.getOrCreateTag().putString("OwnerNote", "编号" + i);
+            ItemData.putInt(item, "index", 2);
+            ItemData.putString(item, "OwnerNote", "编号" + i);
             ListTag songs = new ListTag();
             for (int n = 0; n < 3; n++) {
                 CompoundTag song = new CompoundTag();
@@ -26,11 +27,11 @@ class DeviceStateCompatibilityTest {
                 song.putByteArray("FutureData", new byte[]{0, 5, -1});
                 songs.add(song);
             }
-            item.getOrCreateTag().put("NetMusicSongInfoList", songs);
+            ItemData.put(item, "NetMusicSongInfoList", songs);
             oldInventory.setStackInSlot(i, item);
         }
         CompoundTag legacy = new CompoundTag();
-        CompoundTag inventory = oldInventory.serializeNBT();
+        CompoundTag inventory = oldInventory.serializeNBT(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup());
         inventory.putString("FutureInventoryField", "保留");
         legacy.put("ItemStacksCD", inventory);
         legacy.putInt("PlayIndex", 53);
@@ -40,8 +41,8 @@ class DeviceStateCompatibilityTest {
         CompoundTag restored = new CompoundTag(); queue.write(restored);
         assertEquals(legacy, restored);
         assertEquals(53, queue.selection());
-        for (int i = 0; i < 54; i++) assertEquals(oldInventory.getStackInSlot(i).save(new CompoundTag()),
-                queue.inventory().getStackInSlot(i).save(new CompoundTag()));
+        for (int i = 0; i < 54; i++) assertEquals(((net.minecraft.nbt.CompoundTag)oldInventory.getStackInSlot(i).saveOptional(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup())),
+                queue.inventory().getStackInSlot(i).saveOptional(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup()));
     }
     @Test void omittedLegacySizeAndFreshBlocksRemainUsable() {
         DevicePlaylist queue = new DevicePlaylist(() -> {});

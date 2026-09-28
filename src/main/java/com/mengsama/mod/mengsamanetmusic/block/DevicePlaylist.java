@@ -5,7 +5,7 @@ import com.mengsama.mod.mengsamanetmusic.util.ManualTrackNavigation;
 import com.mengsama.mod.mengsamanetmusic.util.PlayMode;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
 import java.util.function.IntUnaryOperator;
 
  
@@ -61,20 +61,22 @@ public final class DevicePlaylist {
         MusicListItem.setSongIndex(storage.getStackInSlot(selected), next.songIndex());
         changed.run();
     }
-    public void read(CompoundTag tag) {
+    public void read(CompoundTag tag) { read(tag, com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup()); }
+    public void read(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
         inventoryEnvelope = tag.getCompound("ItemStacksCD").copy();
         if (tag.contains("ItemStacksCD", net.minecraft.nbt.Tag.TAG_COMPOUND)) {
             CompoundTag inventory = tag.getCompound("ItemStacksCD").copy();
              
             if (!inventory.contains("Size") || inventory.getInt("Size") < CAPACITY) inventory.putInt("Size", CAPACITY);
-            storage.deserializeNBT(inventory);
+            storage.deserializeNBT(registries, com.mengsama.mod.mengsamanetmusic.platform.StoredItems.upgradeInventory(inventory));
         } else storage.setSize(CAPACITY);
         selected = bounded(tag.getInt("PlayIndex"));
         order = tag.contains("PlayMode") ? PlayMode.getMode(tag.getInt("PlayMode")) : PlayMode.SEQUENTIAL;
     }
-    public void write(CompoundTag tag) {
+    public void write(CompoundTag tag) { write(tag, com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup()); }
+    public void write(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
         CompoundTag inventory = inventoryEnvelope.copy();
-        inventory.merge(storage.serializeNBT());
+        inventory.merge(storage.serializeNBT(registries));
         tag.put("ItemStacksCD", inventory);
         tag.putInt("PlayIndex", selected);
         tag.putInt("PlayMode", order.ordinal());

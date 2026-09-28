@@ -1,7 +1,7 @@
 {
   "type": "minecraft:crafting_shaped",
   "result": {
-    "item": "mengsamanetmusic:music_list"
+    "id": "mengsamanetmusic:music_list"
   },
   "pattern": [
     " P ",

@@ -7,7 +7,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
  
-abstract class CollectionPanelScreen extends Screen {
+abstract class CollectionPanelScreen extends com.mengsama.mod.mengsamanetmusic.gui.ThemedOverlayScreen {
     protected final Screen parent;
     protected int left,top,panelWidth,panelHeight;
     protected EditBox pageInput;
@@ -37,7 +37,7 @@ abstract class CollectionPanelScreen extends Screen {
     protected void go(int page){}
     private void jump(){try{go(Integer.parseInt(pageInput.getValue()));}catch(NumberFormatException ignored){}}
     protected void frame(GuiGraphics g){
-        renderBackground(g);QqLoginSkin.renderCollectionPanel(g,left,top,panelWidth,panelHeight);
+        renderTransparentBackground(g);QqLoginSkin.renderCollectionPanel(g,left,top,panelWidth,panelHeight);
         g.drawString(font,title,left+14,top+12,QqLoginSkin.title(),false);
         g.drawString(font,font.plainSubstrByWidth(status,panelWidth-28),left+14,top+panelHeight-22,QqLoginSkin.secondary(),false);
         if(pageLabel!=null){pageLabel.setMessage(Component.literal(page()+" / "+pages()));previous.active=page()>1;next.active=page()<pages();}
@@ -47,7 +47,7 @@ abstract class CollectionPanelScreen extends Screen {
         return super.keyPressed(key,scan,modifiers);
     }
     @Override public void tick(){
-        if(pageInput!=null)pageInput.tick();
+        if(pageInput!=null){}
         if(parent instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?> screen
                 && (minecraft.player==null || minecraft.player.containerMenu!=screen.getMenu()))minecraft.setScreen(null);
     }

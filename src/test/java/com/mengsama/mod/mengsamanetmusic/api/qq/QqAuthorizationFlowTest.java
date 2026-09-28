@@ -16,7 +16,12 @@ class QqAuthorizationFlowTest {
     private final List<QqHttp.Request> requests = new ArrayList<>();
 
     private QqHttp.Response response(QqHttp.Request request, int status, Map<String,List<String>> headers, String body) {
-        return new QqHttp.Response(request.uri(), status, headers, body.getBytes(StandardCharsets.UTF_8));
+        Map<String,List<String>> scopedHeaders = new LinkedHashMap<>(headers);
+         
+        scopedHeaders.replaceAll((name, rows) -> name.equalsIgnoreCase("Set-Cookie") ? rows.stream()
+                .map(row -> row.toLowerCase(Locale.ROOT).contains("domain=") ? row : row + "; Domain=.qq.com")
+                .toList() : rows);
+        return new QqHttp.Response(request.uri(), status, scopedHeaders, body.getBytes(StandardCharsets.UTF_8));
     }
 
     private QqHttp.Response happy(QqHttp.Request request) {
@@ -40,7 +45,8 @@ class QqAuthorizationFlowTest {
         assertEquals(LoginState.SUCCESS, flow.poll(generation));
         assertEquals(5, requests.size());
         assertEquals("qrsig=qr-secret", requests.get(1).headers().get("Cookie"));
-        assertTrue(requests.get(2).headers().isEmpty());
+        assertFalse(requests.get(2).headers().containsKey("Cookie"));
+        assertEquals(QqProtocol.USER_AGENT, requests.get(2).headers().get("User-Agent"));
         assertFalse(requests.get(2).redirects());
         assertEquals("p_uin=o12345; pt_oauth_token=oauth-secret; p_skey=session-secret", requests.get(3).headers().get("Cookie"));
         assertFalse(requests.get(3).redirects());
@@ -158,4 +164,111 @@ class QqAuthorizationFlowTest {
         state.fail(token,LoginError.MUSIC_LOGIN_FAILED);
         assertTrue(state.diagnostics().contains("LOGGING_IN"));assertTrue(state.diagnostics().contains("HTTP 200"));assertTrue(state.diagnostics().contains("operation=4001"));
     }
+    @Test void confirmedScanWithoutOptionalOauthCookieStillExchangesCodeAndSavesMusicSession() throws Exception {
+        long authorizationTime = System.currentTimeMillis();
+        var flow=new QqAuthorizationFlow(request->{
+            var result=happy(request);
+            if(requests.size()==3)return response(request,302,Map.of("Set-Cookie",List.of(
+                    "p_skey=session-secret; Path=/", "uin=o12345; Path=/", "p_uin=; Path=/")),"");
+            return result;
+        },state,Clock.fixed(java.time.Instant.ofEpochMilli(authorizationTime),java.time.ZoneOffset.UTC),saved::add);
+        long token=state.reset();flow.qr(token);
+        assertEquals(LoginState.SUCCESS,flow.poll(token));assertEquals(1,saved.size());
+        assertEquals("p_uin=o12345; p_skey=session-secret",requests.get(3).headers().get("Cookie"));
+        assertTrue(new String(requests.get(3).body(),StandardCharsets.UTF_8).contains("auth_time=" + authorizationTime));
+        assertTrue(saved.get(0).isValid());assertFalse(state.diagnostics().contains("secret"));
+    }
+    @Test void missingBothSessionCredentialsStillFailsWithoutSavingAndOnlyLogsPresenceFlags() throws Exception {
+        var flow=new QqAuthorizationFlow(request->{
+            var result=happy(request);
+            return requests.size()==3?response(request,200,Map.of("Set-Cookie",List.of("pt2gguin=o12345", "p_skey=; Max-Age=0")),""):result;
+        },state,Clock.systemUTC(),saved::add);
+        long token=state.reset();flow.qr(token);
+        assertEquals(LoginError.SESSION_COOKIE_MISSING,assertThrows(QqAuthorizationFlow.Failure.class,()->flow.poll(token)).type);
+        assertTrue(saved.isEmpty());assertEquals(3,requests.size());
+        assertTrue(state.diagnostics().contains("p_skey=false"));
+        assertFalse(state.diagnostics().contains("12345"));assertFalse(state.diagnostics().contains("private-secret"));
+    }
+
+    @Test void tokenOnlyConfirmedScanReachesOfficialAuthorizerAndRequiresValidMusicCredential() throws Exception {
+        var flow = new QqAuthorizationFlow(request -> {
+            var result = happy(request);
+            if (requests.size() == 3) return response(request, 200, Map.of("Set-Cookie", List.of(
+                    "pt2gguin=o12345; Path=/", "pt_oauth_token=oauth-secret; Path=/")), "verified");
+            return result;
+        }, state, Clock.systemUTC(), saved::add);
+        long token = state.reset(); flow.qr(token);
+        assertEquals(LoginState.SUCCESS, flow.poll(token));
+        assertEquals(5, requests.size()); assertEquals(1, saved.size());
+        assertEquals("p_uin=o12345; pt_oauth_token=oauth-secret", requests.get(3).headers().get("Cookie"));
+        assertTrue(new String(requests.get(3).body(), StandardCharsets.UTF_8).contains("g_tk=5381"));
+    }
+
+    @Test void tokenOnlyScanCannotBecomeLoggedInWhenAuthorizerRejectsIt() throws Exception {
+        var flow = new QqAuthorizationFlow(request -> {
+            var result = happy(request);
+            if (requests.size() == 3) return response(request, 200, Map.of("Set-Cookie", List.of(
+                    "pt2gguin=o12345", "pt_oauth_token=oauth-secret")), "verified");
+            if (requests.size() == 4) return response(request, 200, Map.of(), "{\"ret\":100001}");
+            return result;
+        }, state, Clock.systemUTC(), saved::add);
+        long token = state.reset(); flow.qr(token);
+        assertEquals(LoginError.OAUTH_CODE_MISSING, assertThrows(QqAuthorizationFlow.Failure.class, () -> flow.poll(token)).type);
+        assertEquals(4, requests.size()); assertTrue(saved.isEmpty());
+    }
+
+    @Test void deletingParentDomainCookieMustNotEraseGraphSessionInEitherHeaderOrder() throws Exception {
+        for (boolean deletionFirst : List.of(false, true)) {
+            requests.clear(); saved.clear();
+            var flow = new QqAuthorizationFlow(request -> {
+                var result = happy(request);
+                if (requests.size() == 2) return response(request, 200, Map.of(),
+                        "ptuiCB('0','0','https://ssl.ptlogin2.graph.qq.com/check_sig','0','ok','nick')");
+                if (requests.size() == 3) {
+                    List<String> cookies = new ArrayList<>(List.of(
+                            "p_skey=graph-secret; Domain=.graph.qq.com; Path=/; Secure; HttpOnly",
+                            "p_skey=; Domain=.qq.com; Path=/; Max-Age=0"));
+                    if (deletionFirst) Collections.reverse(cookies);
+                    cookies.add("p_uin=o12345; Domain=.graph.qq.com; Path=/");
+                    cookies.add("pt_oauth_token=oauth-secret; Domain=.qq.com; Path=/");
+                    return response(request, 302, Map.of("Set-Cookie", cookies,
+                            "Location", List.of(QqAuthorizationFlow.JUMP)), "");
+                }
+                return result;
+            }, state, Clock.systemUTC(), saved::add);
+            long token = state.reset(); flow.qr(token);
+            assertEquals(LoginState.SUCCESS, flow.poll(token));
+            assertEquals(5, requests.size()); assertEquals(1, saved.size());
+            assertTrue(requests.get(3).headers().get("Cookie").contains("p_skey=graph-secret"));
+            assertTrue(new String(requests.get(3).body(), StandardCharsets.UTF_8)
+                    .contains("g_tk=" + QqLoginReply.token("graph-secret", 5381)));
+        }
+    }
+
+    @Test void expiredOrOutOfScopeKeysCannotAuthorize() throws Exception {
+        for (List<String> keyHeaders : List.of(
+                List.of("p_skey=wrong; Domain=.music.qq.com; Path=/"),
+                List.of("p_skey=wrong; Domain=.com; Path=/"),
+                List.of("p_skey=wrong; Domain=.graph.qq.com; Path=/unrelated/"),
+                List.of("p_skey=old; Domain=.graph.qq.com; Path=/",
+                        "p_skey=; Domain=.graph.qq.com; Path=/; Max-Age=0"))) {
+            requests.clear(); saved.clear();
+            var flow = new QqAuthorizationFlow(request -> {
+                var result = happy(request);
+                if (requests.size() == 2) return response(request, 200, Map.of(),
+                        "ptuiCB('0','0','https://ssl.ptlogin2.graph.qq.com/check_sig','0','ok','nick')");
+                if (requests.size() == 3) {
+                    List<String> cookies = new ArrayList<>(keyHeaders);
+                    cookies.add("p_uin=o12345; Domain=.graph.qq.com; Path=/");
+                    return response(request, 200, Map.of("Set-Cookie", cookies), "verified");
+                }
+                return result;
+            }, state, Clock.systemUTC(), saved::add);
+            long token = state.reset(); flow.qr(token);
+            assertEquals(LoginError.SESSION_COOKIE_MISSING,
+                    assertThrows(QqAuthorizationFlow.Failure.class, () -> flow.poll(token)).type);
+            assertTrue(saved.isEmpty()); assertEquals(3, requests.size());
+        }
+    }
+
 }

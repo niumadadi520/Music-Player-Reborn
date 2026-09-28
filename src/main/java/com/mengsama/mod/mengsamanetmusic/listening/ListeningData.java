@@ -14,7 +14,7 @@ public final class ListeningData extends SavedData {
     private long cachedTick = Long.MIN_VALUE;
     private List<ListeningLedger.Row> songCache = List.of(), playerCache = List.of();
     public static ListeningData get(MinecraftServer server) {
-        return server.overworld().getDataStorage().computeIfAbsent(ListeningData::load,ListeningData::new,"mengsamanetmusic_listening");
+        return server.overworld().getDataStorage().computeIfAbsent(new SavedData.Factory<>(ListeningData::new, (tag, registries) -> ListeningData.load(tag)),"mengsamanetmusic_listening");
     }
     static ListeningData load(CompoundTag tag) {
         ListeningData data = new ListeningData();
@@ -36,7 +36,7 @@ public final class ListeningData extends SavedData {
         }
         return players ? playerCache : songCache;
     }
-    @Override public CompoundTag save(CompoundTag ignored) {
+    @Override public CompoundTag save(CompoundTag ignored, net.minecraft.core.HolderLookup.Provider registries) {
         CompoundTag result=envelope.copy();
         if (futureVersion) return result;
         result.putInt("Version",1);

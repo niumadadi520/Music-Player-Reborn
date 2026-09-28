@@ -1,5 +1,6 @@
 package com.mengsama.mod.mengsamanetmusic.earbuds;
 
+import com.mengsama.mod.mengsamanetmusic.platform.ItemData;
 import com.mengsama.mod.mengsamanetmusic.gui.MusicPlayerMenu;
 import com.mengsama.mod.mengsamanetmusic.init.ModItems;
 import com.mengsama.mod.mengsamanetmusic.init.ModMenuTypes;
@@ -11,7 +12,7 @@ import net.minecraft.world.*;
 import net.minecraft.world.entity.player.*;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.network.NetworkHooks;
+
 import java.util.UUID;
 
 public final class EarbudMenu extends AbstractContainerMenu {
@@ -22,7 +23,7 @@ public final class EarbudMenu extends AbstractContainerMenu {
     private final InteractionHand hand;
     private final Player owner;
     public EarbudMenu(int id, Inventory inv, FriendlyByteBuf b) {
-        this(id, inv, b.readBoolean(), b.readItem(), null, InteractionHand.MAIN_HAND);
+        this(id, inv, b.readBoolean(), ItemStack.OPTIONAL_STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf)b), null, InteractionHand.MAIN_HAND);
     }
     private EarbudMenu(int id, Inventory inv, boolean caseMenu, ItemStack source, MusicPlayerMenu parent, InteractionHand hand) {
         super(ModMenuTypes.EARBUDS.get(), id); this.caseMenu=caseMenu; this.source=source; this.parent=parent; this.hand=hand; owner=inv.player;
@@ -82,7 +83,7 @@ public final class EarbudMenu extends AbstractContainerMenu {
         slot.onTake(player,stack); return copy;
     }
     @Override public void removed(Player player) {
-        if(!player.level().isClientSide && caseMenu) source.getOrCreateTag().putBoolean("EarbudCaseOpen",false);
+        if(!player.level().isClientSide && caseMenu) ItemData.putBoolean(source, "EarbudCaseOpen",false);
         super.removed(player);
     }
     public static void openDevice(ServerPlayer player,MusicPlayerMenu parent) {
@@ -96,24 +97,24 @@ public final class EarbudMenu extends AbstractContainerMenu {
     static void finishOpeningCase(ServerPlayer player,InteractionHand hand) {
         ItemStack stack=player.getItemInHand(hand);
         if(!(stack.getItem() instanceof EarbudItem e) || e.kind!=3) return;
-        if(!stack.getOrCreateTag().getBoolean("EarbudCaseInitialized")) {
+        if(!ItemData.get(stack).getBoolean("EarbudCaseInitialized")) {
             EarbudSlots.initializeCase(stack,new ItemStack(ModItems.BLUETOOTH_LEFT.get()),new ItemStack(ModItems.BLUETOOTH_RIGHT.get()));
         }
         open(player,true,stack,null,hand);
     }
     private static void open(ServerPlayer player,boolean isCase,ItemStack stack,MusicPlayerMenu parent,InteractionHand hand) {
-        NetworkHooks.openScreen(player,new SimpleMenuProvider((id,inv,p)->new EarbudMenu(id,inv,isCase,stack,parent,hand),
-                Component.literal(isCase?"蓝牙耳机盒":"耳机连接")),b->{b.writeBoolean(isCase);b.writeItem(stack);});
+        player.openMenu(new SimpleMenuProvider((id,inv,p)->new EarbudMenu(id,inv,isCase,stack,parent,hand),
+                Component.literal(isCase?"蓝牙耳机盒":"耳机连接")),b->{b.writeBoolean(isCase);ItemStack.OPTIONAL_STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf)b,stack);});
     }
     public void returnToMusic(ServerPlayer player) {
         if(caseMenu || !stillValid(player)) return;
         if(parent.getBackpackBinding()!=null) {
             var binding=parent.getBackpackBinding();
-            NetworkHooks.openScreen(player,new SimpleMenuProvider((id,inv,p)->MusicPlayerMenu.forBackpack(id,inv,binding),Component.literal("随身听")),
+            player.openMenu(new SimpleMenuProvider((id,inv,p)->MusicPlayerMenu.forBackpack(id,inv,binding),Component.literal("随身听")),
                     b->{b.writeByte(MusicPlayerMenu.Context.BACKPACK.ordinal());binding.write(b);});
         } else {
             UUID id=MusicPlayerItem.getOrCreateInstanceId(source);
-            NetworkHooks.openScreen(player,new SimpleMenuProvider((wid,inv,p)->MusicPlayerMenu.forPlayerHand(wid,inv,id),Component.literal("随身听")),
+            player.openMenu(new SimpleMenuProvider((wid,inv,p)->MusicPlayerMenu.forPlayerHand(wid,inv,id),Component.literal("随身听")),
                     b->{b.writeByte(MusicPlayerMenu.Context.PLAYER_HAND.ordinal());b.writeUUID(id);});
         }
     }

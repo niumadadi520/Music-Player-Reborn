@@ -29,13 +29,13 @@ final class FavoriteSongList extends PagedSongList<FavoriteSongList.Entry> {
         super(mc, width, height, top, bottom, itemHeight);
         this.activate = activate;
         this.feedback = feedback;
-        setRenderBackground(false);
-        setRenderTopAndBottom(false);
+        
+        
         refresh();
     }
 
     @Override public int getRowWidth() { return getWidth() - 12; }
-    @Override protected int getScrollbarPosition() { return getLeft() + getWidth() - 6; }
+    @Override protected int getScrollbarPosition() { return getX() + getWidth() - 6; }
 
     void refresh() {
         loading = true;
@@ -65,13 +65,13 @@ final class FavoriteSongList extends PagedSongList<FavoriteSongList.Entry> {
         if (!reset) setScrollAmount(scroll);
     }
 
-    @Override public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        super.render(graphics, mouseX, mouseY, partialTick);
+    @Override public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        super.renderWidget(graphics, mouseX, mouseY, partialTick);
         if (getItemCount() == 0) {
             String message = loading ? "正在读取收藏…" : songs.isEmpty()
                     ? "点击歌曲右侧 ☆ 即可收藏" : "没有匹配的收藏歌曲";
-            graphics.drawCenteredString(minecraft.font, message, getLeft() + getWidth() / 2,
-                    y0 + 18, MusicPlayerSkin.secondary());
+            graphics.drawCenteredString(minecraft.font, message, getX() + getWidth() / 2,
+                    getY() + 18, MusicPlayerSkin.secondary());
         }
     }
 

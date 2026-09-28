@@ -1,5 +1,6 @@
 package com.mengsama.mod.mengsamanetmusic.karaoke;
 
+import com.mengsama.mod.mengsamanetmusic.platform.ItemData;
 import com.mengsama.mod.mengsamanetmusic.block.MusicPlayerBlockEntity;
 import com.mengsama.mod.mengsamanetmusic.init.ModBlockEntities;
 import net.minecraft.core.BlockPos;
@@ -9,13 +10,10 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.world.item.ItemStack;
 import com.mengsama.mod.mengsamanetmusic.util.PlayMode;
 import net.minecraft.core.Direction;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
 import net.minecraft.world.level.block.state.BlockState;
-import software.bernie.geckolib.core.animation.AnimatableManager;
-import software.bernie.geckolib.core.animation.AnimationController;
-import software.bernie.geckolib.core.animation.RawAnimation;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.RawAnimation;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -54,7 +52,7 @@ public final class KaraokeBlockEntity extends MusicPlayerBlockEntity {
     UUID cachedDeviceId() { return deviceId; }
     public void setDeviceId(UUID id) {
         deviceId = isStand() && !hasMicrophone() ? null : id;
-        if (!mountedMicrophone.isEmpty() && deviceId != null) mountedMicrophone.getOrCreateTag().putUUID(KaraokeMicrophoneItem.ID_TAG, deviceId);
+        if (!mountedMicrophone.isEmpty() && deviceId != null) ItemData.putUUID(mountedMicrophone, KaraokeMicrophoneItem.ID_TAG, deviceId);
         markDirty();
     }
     public Set<UUID> connections() { return Set.copyOf(connections); }
@@ -79,7 +77,7 @@ public final class KaraokeBlockEntity extends MusicPlayerBlockEntity {
     public ItemStack standItem() { return KaraokeMicrophoneData.standOnly(standItem); }
     public void setStandItem(ItemStack source) {
         standItem = KaraokeMicrophoneData.standOnly(source);
-        itemExtras = standItem.hasTag() ? standItem.getTag().copy() : new CompoundTag();
+        itemExtras = ItemData.has(standItem) ? ItemData.nullable(standItem).copy() : new CompoundTag();
     }
      
     public void mountMicrophone(ItemStack microphone) {
@@ -118,9 +116,8 @@ public final class KaraokeBlockEntity extends MusicPlayerBlockEntity {
          
         if (!transferring && !lifecycleSuppressed && !isRemoved()) super.markDirty();
     }
-    @Override public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
-        if (isStand() && !hasMicrophone() && cap == ForgeCapabilities.ITEM_HANDLER) return LazyOptional.empty();
-        return super.getCapability(cap, side);
+    @Override public net.neoforged.neoforge.items.IItemHandler automationInventory() {
+        return isStand() && !hasMicrophone() ? null : super.automationInventory();
     }
     public void voicePulse() {
         if (level == null) return;
@@ -131,23 +128,23 @@ public final class KaraokeBlockEntity extends MusicPlayerBlockEntity {
         }
     }
     public void acceptVoicePulse(long until) { voiceUntil = until; }
-    @Override public void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    @Override public void saveAdditional(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
         if (deviceId != null && (!isStand() || hasMicrophone())) tag.putUUID("KaraokeDeviceId", deviceId);
         else tag.remove("KaraokeDeviceId");
         ListTag list = new ListTag(); connections.forEach(id -> list.add(StringTag.valueOf(id.toString())));
         tag.put("KaraokeConnections", list); tag.putInt("KaraokeVolume", volume);
         tag.put("KaraokeItemExtras", itemExtras.copy());
         if (isStand()) {
-            if (!standItem.isEmpty()) tag.put("KaraokeStandItem", KaraokeMicrophoneData.standOnly(standItem).save(new CompoundTag()));
+            if (!standItem.isEmpty()) tag.put("KaraokeStandItem", KaraokeMicrophoneData.standOnly(standItem).save(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup()));
             else tag.remove("KaraokeStandItem");
-            if (!mountedMicrophone.isEmpty()) tag.put("KaraokeMountedMicrophone", mountedMicrophone().save(new CompoundTag()));
+            if (!mountedMicrophone.isEmpty()) tag.put("KaraokeMountedMicrophone", mountedMicrophone().save(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup()));
             else tag.remove("KaraokeMountedMicrophone");
         }
          
     }
-    @Override public void load(CompoundTag tag) {
-        super.load(tag);
+    @Override public void loadAdditional(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
         deviceId = tag.hasUUID("KaraokeDeviceId") ? tag.getUUID("KaraokeDeviceId") : null;
         connections.clear();
         for (var entry : tag.getList("KaraokeConnections", 8)) {
@@ -157,14 +154,14 @@ public final class KaraokeBlockEntity extends MusicPlayerBlockEntity {
         volume = tag.contains("KaraokeVolume") ? KaraokeCode.volume(tag.getInt("KaraokeVolume")) : 80;
         itemExtras = tag.getCompound("KaraokeItemExtras").copy();
         if (isStand()) {
-            standItem = KaraokeMicrophoneData.standOnly(ItemStack.of(tag.getCompound("KaraokeStandItem")));
-            ItemStack savedMicrophone = ItemStack.of(tag.getCompound("KaraokeMountedMicrophone"));
+            standItem = KaraokeMicrophoneData.standOnly(com.mengsama.mod.mengsamanetmusic.platform.StoredItems.read(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup(), tag.getCompound("KaraokeStandItem")));
+            ItemStack savedMicrophone = com.mengsama.mod.mengsamanetmusic.platform.StoredItems.read(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup(), tag.getCompound("KaraokeMountedMicrophone"));
             mountedMicrophone = KaraokeMicrophoneData.isHandheld(savedMicrophone) ? savedMicrophone.copy() : ItemStack.EMPTY;
             if (!mountedMicrophone.isEmpty()) {
                 mountedMicrophone.setCount(1);
                 UUID storedId = KaraokeMicrophoneItem.getId(mountedMicrophone);
                 if (storedId != null) deviceId = storedId;
-                else if (deviceId != null) mountedMicrophone.getOrCreateTag().putUUID(KaraokeMicrophoneItem.ID_TAG, deviceId);
+                else if (deviceId != null) ItemData.putUUID(mountedMicrophone, KaraokeMicrophoneItem.ID_TAG, deviceId);
             } else {
                 transferring = true;
                 try { clearMicrophone(); } finally { transferring = false; }
@@ -173,8 +170,8 @@ public final class KaraokeBlockEntity extends MusicPlayerBlockEntity {
         microphoneActive = tag.getBoolean("KaraokeRuntimeActive"); voiceUntil = tag.getLong("KaraokeVoiceUntil");
         if (!hasMicrophone() && !isSpeaker()) { microphoneActive = false; voiceUntil = 0; }
     }
-    @Override public CompoundTag getUpdateTag() {
-        CompoundTag tag = super.getUpdateTag();
+    @Override public CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider registries) {
+        CompoundTag tag = super.getUpdateTag(registries);
         tag.putBoolean("KaraokeRuntimeActive", microphoneActive); tag.putLong("KaraokeVoiceUntil", voiceUntil);
         return tag;
     }

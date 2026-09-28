@@ -6,9 +6,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import com.mengsama.mod.mengsamanetmusic.platform.PacketContext;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -83,7 +83,7 @@ public class PlayMusicPacket {
         buf.writeInt(message.startSecond);
     }
 
-    public static void handle(PlayMusicPacket message, Supplier<NetworkEvent.Context> contextSupplier) {
+    public static void handle(PlayMusicPacket message, Supplier<PacketContext> contextSupplier) {
         ClientPacketDispatch.accept(contextSupplier, () -> onHandle(message));
     }
 

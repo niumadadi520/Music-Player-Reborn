@@ -2,9 +2,9 @@ package com.mengsama.mod.mengsamanetmusic.network;
 
 import com.mengsama.mod.mengsamanetmusic.client.audio.ClientMusicPlayback;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import com.mengsama.mod.mengsamanetmusic.platform.PacketContext;
 
 import java.util.function.Supplier;
 
@@ -32,7 +32,7 @@ public record PauseMusicPacketClient(String targetId, boolean paused, long reque
         return new PauseMusicPacketClient(buf.readUtf(), buf.readBoolean(), buf.readLong(), buf.readLong());
     }
 
-    public static void handle(PauseMusicPacketClient packet, Supplier<NetworkEvent.Context> ctx) {
+    public static void handle(PauseMusicPacketClient packet, Supplier<PacketContext> ctx) {
         ClientPacketDispatch.accept(ctx, () -> handleClient(packet));
     }
 

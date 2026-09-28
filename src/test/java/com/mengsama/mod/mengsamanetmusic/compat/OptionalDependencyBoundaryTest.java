@@ -1,5 +1,6 @@
 package com.mengsama.mod.mengsamanetmusic.compat;
 
+import net.neoforged.fml.common.EventBusSubscriber;
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.*;
 import java.util.ArrayList;

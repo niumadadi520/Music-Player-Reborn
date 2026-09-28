@@ -2,10 +2,10 @@ package com.mengsama.mod.mengsamanetmusic.item;
 
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import software.bernie.geckolib.animatable.GeoItem;
-import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
 import software.bernie.geckolib.util.GeckoLibUtil;
 import java.util.function.Consumer;
 
@@ -20,14 +20,14 @@ public class MusicDeviceBlockItem extends BlockItem implements GeoItem {
     @Override public AnimatableInstanceCache getAnimatableInstanceCache() { return animationCache; }
     @Override public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         if(!modelName.equals("pink_walkman"))return;
-        controllers.add(new software.bernie.geckolib.core.animation.AnimationController<>(this,"handheld_playback",0,state->{
+        controllers.add(new software.bernie.geckolib.animation.AnimationController<>(this,"handheld_playback",0,state->{
             var stack=state.getData(software.bernie.geckolib.constant.DataTickets.ITEMSTACK);
             var perspective=state.getData(software.bernie.geckolib.constant.DataTickets.ITEM_RENDER_PERSPECTIVE);
-            return state.setAndContinue(software.bernie.geckolib.core.animation.RawAnimation.begin().thenLoop(
+            return state.setAndContinue(software.bernie.geckolib.animation.RawAnimation.begin().thenLoop(
                     MusicPlayerItem.handheldPlaybackAnimation(stack,perspective)));
         }));
     }
-    @Override public void initializeClient(Consumer<IClientItemExtensions> consumer) {
+    public void createClientExtensions(Consumer<IClientItemExtensions> consumer) {
         consumer.accept(new IClientItemExtensions() {
             private net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer renderer;
             @Override public net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer getCustomRenderer() {

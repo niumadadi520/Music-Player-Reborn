@@ -1,5 +1,6 @@
 package com.mengsama.mod.mengsamanetmusic.item;
 
+import com.mengsama.mod.mengsamanetmusic.platform.ItemData;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -13,7 +14,7 @@ class HandheldPlaybackStabilityTest {
     private static MusicPlayerItem item;
     @BeforeAll static void setup() throws Exception {
         MusicPlayerItemTest.bootstrapMinecraft();
-        item=Registry.register(BuiltInRegistries.ITEM,new ResourceLocation("mengsama_test","stable_walkman"),new MusicPlayerItem(Blocks.STONE,new Item.Properties().stacksTo(1)));
+        item=Registry.register(BuiltInRegistries.ITEM,ResourceLocation.fromNamespaceAndPath("mengsama_test", "stable_walkman"),new MusicPlayerItem(Blocks.STONE,new Item.Properties().stacksTo(1)));
     }
     private ItemStack playing(){
         ItemStack stack=new ItemStack(item);MusicPlayerItem.getOrCreateInstanceId(stack);
@@ -54,7 +55,7 @@ class HandheldPlaybackStabilityTest {
         ItemStack held=playing();
         for(int i=0;i<200;i++){
             ItemStack synced=held.copy();MusicPlayerItem.tickTime(synced);
-            assertFalse(ItemStack.isSameItemSameTags(held,synced));
+            assertFalse(ItemStack.isSameItemSameComponents(held,synced));
             assertFalse(item.shouldCauseReequipAnimation(held,synced,false));
             held=synced;
         }
@@ -63,9 +64,9 @@ class HandheldPlaybackStabilityTest {
     @Test void pauseTrackAndOutputChangesDoNotMoveTheHandOrModifyStackData(){
         ItemStack old=playing(),updated=old.copy();
         MusicPlayerItem.setPaused(updated,true);MusicPlayerItem.setPlayIndex(updated,2);MusicPlayerItem.setBroadcast(updated,false);
-        var beforeOld=old.getTag().copy();var beforeNew=updated.getTag().copy();
+        var beforeOld=ItemData.nullable(old).copy();var beforeNew=ItemData.nullable(updated).copy();
         assertFalse(item.shouldCauseReequipAnimation(old,updated,false));
-        assertEquals(beforeOld,old.getTag());assertEquals(beforeNew,updated.getTag());
+        assertEquals(beforeOld,ItemData.nullable(old));assertEquals(beforeNew,ItemData.nullable(updated));
     }
     @Test void switchingSlotsOrItemsAndDroppingStillReequips(){
         ItemStack old=playing();
@@ -81,6 +82,6 @@ class HandheldPlaybackStabilityTest {
         ItemStack old=new ItemStack(item),synced=old.copy();
         UUID id=MusicPlayerItem.getOrCreateInstanceId(synced);
         assertFalse(item.shouldCauseReequipAnimation(old,synced,false));
-        assertFalse(old.hasTag());assertEquals(id,MusicPlayerItem.getInstanceId(synced));
+        assertFalse(ItemData.has(old));assertEquals(id,MusicPlayerItem.getInstanceId(synced));
     }
 }

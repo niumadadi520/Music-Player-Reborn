@@ -103,7 +103,7 @@ final class AccountPlaylistScreen extends CollectionPanelScreen {
         list.replaceSongs(songs.stream().filter(s->(s.songName+" "+String.join(" ",s.artists)).toLowerCase(Locale.ROOT).contains(query)).map(list::entry).toList(),true);
     }
     @Override public void tick(){
-        super.tick();if(filter!=null)filter.tick();
+        super.tick();if(filter!=null){}
         if(!stamp.equals(stamp()))load();
         if(busy && System.nanoTime()-started>180_000_000_000L){requests.incrementAndGet();busy=false;status="读取超时，请稍后重试";}
         refresh.active=!busy;select.active=provider==2 && applePlaylists.size()>1 && !busy;
@@ -119,10 +119,10 @@ final class AccountPlaylistScreen extends CollectionPanelScreen {
         if(songs.isEmpty())g.drawCenteredString(font,busy?"正在读取账号歌单…":"登录对应账号后，点击读取 / 刷新",left+panelWidth/2,top+135,QqLoginSkin.secondary());
     }
     private final class SongList extends PagedSongList<SongEntry>{
-        SongList(){super(AccountPlaylistScreen.this.minecraft,panelWidth-24,panelHeight,top+124,Math.max(top+136,top+panelHeight-58),30);setLeftPos(left+12);setRenderBackground(false);setRenderTopAndBottom(false);}
+        SongList(){super(AccountPlaylistScreen.this.minecraft,panelWidth-24,panelHeight,top+124,Math.max(top+136,top+panelHeight-58),30);setX(left+12);}
         SongEntry entry(SongInfo song){return new SongEntry(song);}
         @Override public int getRowWidth(){return getWidth()-12;}
-        @Override protected int getScrollbarPosition(){return getLeft()+getWidth()-6;}
+        @Override protected int getScrollbarPosition(){return getX()+getWidth()-6;}
     }
     private final class SongEntry extends ObjectSelectionList.Entry<SongEntry>{
         private final SongInfo song;private int x,y,w,h;

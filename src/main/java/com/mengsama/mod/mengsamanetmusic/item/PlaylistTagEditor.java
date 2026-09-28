@@ -1,5 +1,6 @@
 package com.mengsama.mod.mengsamanetmusic.item;
 
+import com.mengsama.mod.mengsamanetmusic.platform.ItemData;
 import com.mengsama.mod.mengsamanetmusic.api.SongInfo;
 import net.minecraft.nbt.*;
 import net.minecraft.world.item.ItemStack;
@@ -9,15 +10,15 @@ import java.util.function.Consumer;
 final class PlaylistTagEditor {
     static final String SONGS = "NetMusicSongInfoList";
     static ListTag rows(ItemStack item) {
-        return item.getItem() instanceof MusicListItem && item.hasTag()
-                ? item.getTag().getList(SONGS, Tag.TAG_COMPOUND) : new ListTag();
+        return item.getItem() instanceof MusicListItem && ItemData.has(item)
+                ? ItemData.nullable(item).getList(SONGS, Tag.TAG_COMPOUND) : new ListTag();
     }
-    static int index(ItemStack item) { return item.hasTag() ? item.getTag().getInt("index") : 0; }
+    static int index(ItemStack item) { return ItemData.has(item) ? ItemData.nullable(item).getInt("index") : 0; }
     static void edit(ItemStack item, Consumer<CompoundTag> operation) {
         if (!(item.getItem() instanceof MusicListItem)) return;
-        CompoundTag copy = item.hasTag() ? item.getTag().copy() : new CompoundTag();
+        CompoundTag copy = ItemData.has(item) ? ItemData.nullable(item).copy() : new CompoundTag();
         operation.accept(copy);
-        item.setTag(copy);
+        ItemData.set(item, copy);
     }
     static void putSong(ItemStack item, SongInfo song, boolean append) {
         if (song == null || !(item.getItem() instanceof MusicListItem)) return;

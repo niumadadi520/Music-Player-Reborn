@@ -1,5 +1,6 @@
 package com.mengsama.mod.mengsamanetmusic.earbuds.client;
 
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.mengsama.mod.mengsamanetmusic.earbuds.*;
 import com.mengsama.mod.mengsamanetmusic.earbuds.client.handoff.HandoffClientAdapter;
 import com.mengsama.mod.mengsamanetmusic.earbuds.handoff.HandoffMotion;
@@ -17,16 +18,16 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.util.Mth;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.*;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.event.*;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import java.util.*;
 
-@Mod.EventBusSubscriber(modid="mengsamanetmusic",value=Dist.CLIENT)
+@EventBusSubscriber(modid="mengsamanetmusic",value=Dist.CLIENT)
 public final class EarbudRender {
     private record Frame(Matrix4f head,Matrix4f body,int light) {}
     private static final Map<UUID,Frame> HEADS=new HashMap<>();
@@ -42,10 +43,10 @@ public final class EarbudRender {
         pose.translate(0,-2,0);pose.mulPose(new Quaternionf().rotationZYX((float)Math.toRadians(roll),(float)Math.toRadians(yaw),(float)Math.toRadians(pitch)));pose.translate(0,2,0);
         PLUGS.capture(device,CableAttachments.Kind.BACKPACK,WiredCableRenderer.capture(pose,-.8225,-2.235,.2375));pose.popPose();
     }
-    @Mod.EventBusSubscriber(modid="mengsamanetmusic",value=Dist.CLIENT,bus=Mod.EventBusSubscriber.Bus.MOD)
+    @EventBusSubscriber(modid="mengsamanetmusic",value=Dist.CLIENT,bus=EventBusSubscriber.Bus.MOD)
     public static final class Layers {
         @SubscribeEvent public static void add(EntityRenderersEvent.AddLayers event) {
-            for(String skin:event.getSkins()) {PlayerRenderer renderer=event.getSkin(skin);if(renderer!=null)renderer.addLayer(new CaptureLayer(renderer));}
+            for(var skin:event.getSkins()) {PlayerRenderer renderer=event.getSkin(skin);if(renderer!=null)renderer.addLayer(new CaptureLayer(renderer));}
         }
     }
     private static final class CaptureLayer extends RenderLayer<AbstractClientPlayer,PlayerModel<AbstractClientPlayer>> {
@@ -60,7 +61,7 @@ public final class EarbudRender {
         if(event.getStage()==RenderLevelStageEvent.Stage.AFTER_SKY){clear();capturing=true;return;}
         if(event.getStage()!=RenderLevelStageEvent.Stage.AFTER_ENTITIES)return;
         var mc=Minecraft.getInstance();if(mc.level==null||mc.player==null){capturing=false;return;}
-        float partial=event.getPartialTick();double tick=EarbudClient.tick(partial);MultiBufferSource.BufferSource buffers=mc.renderBuffers().bufferSource();
+        float partial=event.getPartialTick().getGameTimeDeltaPartialTick(true);double tick=EarbudClient.tick(partial);MultiBufferSource.BufferSource buffers=mc.renderBuffers().bufferSource();
         Point gravity=WiredCableRenderer.captureDirection(event.getPoseStack(),0,-1,0);
         for(CompoundTag state:EarbudClient.DEVICES.values()) {
             Player owner=mc.level.getPlayerByUUID(state.getUUID("Owner"));if(owner==null||!owner.isAlive()||owner.isInvisibleTo(mc.player))continue;
@@ -119,12 +120,12 @@ public final class EarbudRender {
     private static Point body(Frame frame,double x,double y,double z){Vector3f p=frame.body.transformPosition(new Vector3f((float)x,(float)y,(float)z));return new Point(p.x,p.y,p.z);}
     private static Point point(Matrix4f matrix,HandoffMotion.Vec local){Vector3f p=matrix.transformPosition(new Vector3f((float)local.x(),(float)local.y(),(float)local.z()));return new Point(p.x,p.y,p.z);}
     private static void wear(Matrix4f head,boolean wired,int mask,MultiBufferSource buffers,int light) {
-        if(mask==0)return;PoseStack pose=new PoseStack();pose.mulPoseMatrix(head);pose.last().normal().set(head).invert().transpose();pose.scale(-1,-1,1);pose.translate(0,-1.5,0);
+        if(mask==0)return;PoseStack pose=new PoseStack();pose.mulPose(head);pose.last().normal().set(head).invert().transpose();pose.scale(-1,-1,1);pose.translate(0,-1.5,0);
         EarbudMesh.render("pink_"+(wired?"wired":"bluetooth")+"_earbuds_"+(mask==3?"both":mask==1?"left":"right"),pose,buffers,light);
     }
     private static Frame frame(Player player,RenderLevelStageEvent event) {
         Frame cached=HEADS.get(player.getUUID());if(cached!=null)return cached;
-        var camera=event.getCamera().getPosition();float partial=event.getPartialTick();PoseStack pose=new PoseStack();pose.mulPoseMatrix(event.getPoseStack().last().pose());
+        var camera=event.getCamera().getPosition();float partial=event.getPartialTick().getGameTimeDeltaPartialTick(true);PoseStack pose=new PoseStack();pose.mulPose(event.getPoseStack().last().pose());
         pose.translate(Mth.lerp(partial,player.xo,player.getX())-camera.x,Mth.lerp(partial,player.yo,player.getY())-camera.y+1.50-(player.isCrouching()?.125:0),Mth.lerp(partial,player.zo,player.getZ())-camera.z);
         pose.mulPose(Axis.YP.rotationDegrees(180-Mth.rotLerp(partial,player.yBodyRotO,player.yBodyRot)));pose.scale(-1,-1,1);Matrix4f body=new Matrix4f(pose.last().pose());
         pose.mulPose(Axis.YP.rotationDegrees(Mth.rotLerp(partial,player.yHeadRotO,player.yHeadRot)-Mth.rotLerp(partial,player.yBodyRotO,player.yBodyRot)));pose.mulPose(Axis.XP.rotationDegrees(Mth.lerp(partial,player.xRotO,player.getXRot())));

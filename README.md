@@ -8,7 +8,7 @@
 
 Author: **niumadadi520**
 
-**First public release · 1.0.0 · Minecraft 1.20.1 / Forge**
+**First public release · 1.0.0 · Minecraft 1.21.1 / NeoForge**
 
 Place a gramophone in your home, take a portable music player on an adventure, or build a small stage with friends. Music Player Reborn adds music devices, earphone sharing, lyrics, and karaoke to Minecraft.
 
@@ -70,14 +70,14 @@ Install the matching game and loader versions of integrations and their dependen
 
 ### Installation
 
-This repository targets **Minecraft 1.20.1 / Forge** and uses **Java 17**. It is built against **Forge 47.4.22** and requires the matching **GeckoLib 4.x** release.
+This repository targets **Minecraft 1.21.1 / NeoForge** and uses **Java 21**. It is built against **NeoForge 21.1.248** and requires the matching **GeckoLib 4.x** release.
 
-1. Install the matching Minecraft, Forge, and Java versions.
+1. Install the matching Minecraft, NeoForge, and Java versions.
 2. Place the mod's full JAR and GeckoLib in your `mods` folder.
 3. Install the relevant optional mods and dependencies for backpack, accessory, or karaoke features.
 4. In multiplayer, clients and the server need the same mod branch and required dependencies.
 
-A separate Minecraft 1.21.1 / NeoForge branch is available. The branches are built separately, and their files are not interchangeable. Development artifacts containing `-sources` or `-slim` in their names are not intended for game installation.
+A separate Minecraft 1.20.1 / Forge branch is available. The branches are built separately, and their files are not interchangeable. Development artifacts containing `-sources` or `-slim` in their names are not intended for game installation.
 
 ### Controls
 
@@ -111,7 +111,7 @@ Include your Minecraft version, loader, mod version, reproduction steps, and rel
 
 ### Building from source
 
-Install JDK 17 and run the following from the repository root.
+Install JDK 21 and run the following from the repository root.
 
 Windows:
 
@@ -155,7 +155,7 @@ Code, assets, and third-party components have different licenses; see the [licen
 
 作者：**niumadadi520**
 
-**首次公开发布 · 1.0.0 · Minecraft 1.20.1 / Forge**
+**首次公开发布 · 1.0.0 · Minecraft 1.21.1 / NeoForge**
 
 给小屋放一台唱片机，带着随身听去探索，或者和朋友搭一座小舞台。音乐机重生为 Minecraft 加入音乐播放设备、耳机分享、歌词显示与 K 歌功能，让音乐成为日常游玩的一部分。
 
@@ -217,14 +217,14 @@ Code, assets, and third-party components have different licenses; see the [licen
 
 ## 安装
 
-本仓库是 **Minecraft 1.20.1 / Forge** 分支，使用 **Java 17**。构建所用加载器为 Forge 47.4.22，必需前置为对应版本的 **GeckoLib 4.x**。
+本仓库是 **Minecraft 1.21.1 / NeoForge** 分支，使用 **Java 21**。构建所用加载器为 NeoForge 21.1.248，必需前置为对应版本的 **GeckoLib 4.x**。
 
-1. 安装对应版本的 Minecraft、Forge 和 Java。
+1. 安装对应版本的 Minecraft、NeoForge 和 Java。
 2. 将本模组完整 JAR 与 GeckoLib 放入 `mods` 文件夹。
 3. 如需背包、饰品或 K 歌功能，再安装对应联动模组和前置。
 4. 多人游戏的客户端和服务端需要安装相同分支及必需前置。
 
-另有 Minecraft 1.21.1 / NeoForge 分支。两个分支分别构建，不能混用文件。名字带 `-sources` 或 `-slim` 的开发产物不用于游戏安装。
+另有 Minecraft 1.20.1 / Forge 分支。两个分支分别构建，不能混用文件。名字带 `-sources` 或 `-slim` 的开发产物不用于游戏安装。
 
 ## 常用操作
 
@@ -258,7 +258,7 @@ Code, assets, and third-party components have different licenses; see the [licen
 
 ## 从源码构建
 
-安装 JDK 17，在仓库根目录执行：
+安装 JDK 21，在仓库根目录执行：
 
 Windows：
 

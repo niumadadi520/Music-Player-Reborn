@@ -18,12 +18,12 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-final class NetEaseQrLoginScreen extends Screen {
+final class NetEaseQrLoginScreen extends com.mengsama.mod.mengsamanetmusic.gui.ThemedOverlayScreen {
     private static final AtomicLong IDS=new AtomicLong();
     private final Screen parent;
     private NetEaseQrLogin api;
     private final NetEaseQrAttempt attempt=new NetEaseQrAttempt();
-    private final ResourceLocation textureId=new ResourceLocation("mengsamanetmusic","netease_login_qr/"+IDS.incrementAndGet());
+    private final ResourceLocation textureId=ResourceLocation.fromNamespaceAndPath("mengsamanetmusic","netease_login_qr/"+IDS.incrementAndGet());
     private QqLoginLayout layout;
     private DynamicTexture texture;
     private int pixels;
@@ -95,7 +95,7 @@ final class NetEaseQrLoginScreen extends Screen {
         case FETCHING->"正在申请二维码…";case WAITING->"等待扫码";case SCANNED->"已扫码，请在手机上确认登录";
         case SUCCESS->"登录成功，正在返回歌单";case EXPIRED->"二维码已过期，请点击刷新";case FAILED->failureStatus;default->"点击刷新开始扫码";};}
     @Override public void render(GuiGraphics g,int mx,int my,float partial){
-        renderBackground(g);QqLoginSkin.renderPanel(g,layout);
+        renderTransparentBackground(g);QqLoginSkin.renderPanel(g,layout);
         var title=layout.title();g.drawCenteredString(font,this.title,title.x()+title.width()/2,title.y(),QqLoginSkin.title());
         var subtitle=layout.subtitle();g.drawCenteredString(font,"使用手机网易云音乐扫码",subtitle.x()+subtitle.width()/2,subtitle.y(),QqLoginSkin.secondary());
         if(texture!=null){var area=QqLoginLayout.fitImage(layout.qrImageArea(),pixels,pixels);g.blit(textureId,area.x(),area.y(),area.width(),area.height(),0,0,pixels,pixels,pixels,pixels);}

@@ -6,8 +6,8 @@ import com.mengsama.mod.mengsamanetmusic.util.NetMusicSound;
 import com.mengsama.mod.mengsamanetmusic.util.PlayerNetMusicSound;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SoundInstance;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

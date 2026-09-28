@@ -11,7 +11,7 @@ public final class BackpackMixinPlugin implements IMixinConfigPlugin {
     @Override public String getRefMapperConfig() { return null; }
     @Override public boolean shouldApplyMixin(String target, String mixin) {
         if (!target.startsWith("net.p3pp3rf1y.sophisticatedbackpacks.")) return true;
-        var list = net.minecraftforge.fml.loading.FMLLoader.getLoadingModList();
+        var list = net.neoforged.fml.loading.FMLLoader.getLoadingModList();
         return list != null && list.getModFileById("sophisticatedbackpacks") != null;
     }
     @Override public void acceptTargets(Set<String> mine, Set<String> other) {}

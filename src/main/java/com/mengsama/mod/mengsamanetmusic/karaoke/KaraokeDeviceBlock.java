@@ -1,5 +1,6 @@
 package com.mengsama.mod.mengsamanetmusic.karaoke;
 
+import com.mengsama.mod.mengsamanetmusic.platform.ItemData;
 import com.mengsama.mod.mengsamanetmusic.block.MusicPlayerBlock;
 import com.mengsama.mod.mengsamanetmusic.block.MusicPlayerBlockEntity;
 import com.mengsama.mod.mengsamanetmusic.gui.MusicPlayerPlaylistMenu;
@@ -27,6 +28,8 @@ import net.minecraft.world.phys.shapes.*;
 import java.util.UUID;
 
 public final class KaraokeDeviceBlock extends HorizontalDirectionalBlock implements EntityBlock {
+    @Override protected com.mojang.serialization.MapCodec<? extends KaraokeDeviceBlock> codec() { return com.mojang.serialization.MapCodec.unit(this); }
+
     private static final VoxelShape[][] STAND_SHAPES = createStandShapes();
     private final String modelName;
     private final boolean speaker;
@@ -79,7 +82,14 @@ public final class KaraokeDeviceBlock extends HorizontalDirectionalBlock impleme
         }
         return shapes;
     }
-    @Override public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
+    @Override protected net.minecraft.world.ItemInteractionResult useItemOn(ItemStack held, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        var result=use(state,level,pos,player,hand,hit);
+        return result==InteractionResult.PASS ? net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION : net.minecraft.world.ItemInteractionResult.valueOf(result.name());
+    }
+    @Override protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        return use(state, level, pos, player, InteractionHand.MAIN_HAND, hit);
+    }
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
                                            InteractionHand hand, BlockHitResult hit) {
         if (!(level.getBlockEntity(pos) instanceof KaraokeBlockEntity device) || player.isSpectator()) return InteractionResult.PASS;
         if (isStand()) {
@@ -107,8 +117,7 @@ public final class KaraokeDeviceBlock extends HorizontalDirectionalBlock impleme
         } else if (hand != InteractionHand.MAIN_HAND) return InteractionResult.PASS;
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
             device.deviceId();
-            net.minecraftforge.network.NetworkHooks.openScreen(serverPlayer,
-                    new SimpleMenuProvider((window, inv, p) -> new MusicPlayerPlaylistMenu(window, inv, device),
+            serverPlayer.openMenu(new SimpleMenuProvider((window, inv, p) -> new MusicPlayerPlaylistMenu(window, inv, device),
                             asItem().getDescription()), buf -> buf.writeBlockPos(pos));
             KaraokeServer.sendState(serverPlayer, "");
         }
@@ -126,8 +135,8 @@ public final class KaraokeDeviceBlock extends HorizontalDirectionalBlock impleme
         ItemStack attached = held.copy(); attached.setCount(1);
         boolean retainsOriginal = player.getAbilities().instabuild || held.getCount() > 1;
         if (retainsOriginal) {
-            attached.getOrCreateTag().putUUID(KaraokeMicrophoneItem.ID_TAG, KaraokeData.get(player.server).create());
-            attached.getOrCreateTag().putUUID("MusicPlayerInstanceId", UUID.randomUUID());
+            ItemData.putUUID(attached, KaraokeMicrophoneItem.ID_TAG, KaraokeData.get(player.server).create());
+            ItemData.putUUID(attached, "MusicPlayerInstanceId", UUID.randomUUID());
         }
         device.mountMicrophone(attached);
         if (!retainsOriginal) KaraokeServer.releaseClaim(KaraokeMicrophoneItem.getId(held), held);
@@ -155,7 +164,7 @@ public final class KaraokeDeviceBlock extends HorizontalDirectionalBlock impleme
             return;
         }
         if (placer instanceof ServerPlayer player && stack.getItem() instanceof KaraokeMicrophoneItem) KaraokeServer.stopItemForTransfer(player, stack);
-        CompoundTag tag = stack.getTag();
+        CompoundTag tag = ItemData.nullable(stack);
         if (tag != null && tag.contains("KaraokeBlockData", 10)) device.load(tag.getCompound("KaraokeBlockData"));
         device.setItemExtras(tag == null ? new CompoundTag() : tag);
         if (!speaker) {
@@ -176,11 +185,11 @@ public final class KaraokeDeviceBlock extends HorizontalDirectionalBlock impleme
             ItemStack stand = device.standItem();
             return stand.isEmpty() ? new ItemStack(asItem()) : stand;
         }
-        ItemStack stack = new ItemStack(asItem()); stack.setTag(device.itemExtras());
-        CompoundTag blockTag = device.saveWithoutMetadata();
+        ItemStack stack = new ItemStack(asItem()); stack.applyComponents(device.collectComponents()); ItemData.set(stack, device.itemExtras());
+        CompoundTag blockTag = device.saveCustomOnly(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup());
         blockTag.remove("KaraokeItemExtras"); blockTag.putBoolean("IsPlay", false); blockTag.putBoolean("IsPaused", false);
-        blockTag.putInt("CurrentTime", 0); stack.getOrCreateTag().put("KaraokeBlockData", blockTag);
-        if (!speaker && device.deviceId() != null) stack.getOrCreateTag().putUUID(KaraokeMicrophoneItem.ID_TAG, device.deviceId());
+        blockTag.putInt("CurrentTime", 0); ItemData.put(stack, "KaraokeBlockData", blockTag);
+        if (!speaker && device.deviceId() != null) ItemData.putUUID(stack, KaraokeMicrophoneItem.ID_TAG, device.deviceId());
         var cds = NonNullList.withSize(54, ItemStack.EMPTY);
         for(int i=0;i<cds.size();i++) cds.set(i, device.getPlayerInv().getStackInSlot(i).copy());
         int previousIndex = Math.max(0, Math.min(cds.size()-1, device.getPlayIndex()));

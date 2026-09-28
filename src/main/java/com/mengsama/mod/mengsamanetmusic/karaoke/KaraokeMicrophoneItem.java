@@ -1,5 +1,6 @@
 package com.mengsama.mod.mengsamanetmusic.karaoke;
 
+import com.mengsama.mod.mengsamanetmusic.platform.ItemData;
 import com.mengsama.mod.mengsamanetmusic.gui.MusicPlayerMenu;
 import com.mengsama.mod.mengsamanetmusic.item.MusicPlayerItem;
 import net.minecraft.network.chat.Component;
@@ -16,7 +17,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.network.NetworkHooks;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -29,11 +30,11 @@ public final class KaraokeMicrophoneItem extends MusicPlayerItem {
     }
     public boolean isHandheld() { return handheld; }
     public static UUID getId(ItemStack stack) {
-        return stack.hasTag() && stack.getTag().hasUUID(ID_TAG) ? stack.getTag().getUUID(ID_TAG) : null;
+        return ItemData.has(stack) && ItemData.nullable(stack).hasUUID(ID_TAG) ? ItemData.nullable(stack).getUUID(ID_TAG) : null;
     }
     public static UUID ensureId(ItemStack stack, net.minecraft.server.MinecraftServer server) {
         UUID id = getId(stack);
-        if (id == null) { id = KaraokeData.get(server).create(); stack.getOrCreateTag().putUUID(ID_TAG, id); }
+        if (id == null) { id = KaraokeData.get(server).create(); ItemData.putUUID(stack, ID_TAG, id); }
         KaraokeData.get(server).remember(id);
         return id;
     }
@@ -47,7 +48,7 @@ public final class KaraokeMicrophoneItem extends MusicPlayerItem {
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
             KaraokeServer.observeItem(serverPlayer, stack);
             UUID instance = getOrCreateInstanceId(stack);
-            NetworkHooks.openScreen(serverPlayer, new SimpleMenuProvider(
+            serverPlayer.openMenu(new SimpleMenuProvider(
                     (window, inv, p) -> MusicPlayerMenu.forPlayerHand(window, inv, instance), stack.getHoverName()),
                     buf -> { buf.writeByte(MusicPlayerMenu.Context.PLAYER_HAND.ordinal()); buf.writeUUID(instance); });
             KaraokeServer.sendState(serverPlayer, "");
@@ -66,7 +67,7 @@ public final class KaraokeMicrophoneItem extends MusicPlayerItem {
          
         return handheld ? InteractionResult.FAIL : super.place(context);
     }
-    @Override public void appendHoverText(ItemStack stack, Level level, List<Component> lines, TooltipFlag flag) {
+    @Override public void appendHoverText(ItemStack stack, net.minecraft.world.item.Item.TooltipContext level, List<Component> lines, TooltipFlag flag) {
         UUID id = getId(stack);
         if (id != null) lines.add(Component.literal("连接码：" + KaraokeCode.format(id)));
         lines.add(Component.literal("Shift + 右键：K 歌开关与音乐界面"));

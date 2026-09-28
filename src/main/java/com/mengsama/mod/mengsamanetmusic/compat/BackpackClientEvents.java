@@ -1,12 +1,13 @@
 package com.mengsama.mod.mengsamanetmusic.compat;
 
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 
-@Mod.EventBusSubscriber(modid = "mengsamanetmusic", value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = "mengsamanetmusic", value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public final class BackpackClientEvents {
     @SubscribeEvent public static void setup(FMLClientSetupEvent event) {
         if (BackpackAccess.available()) event.enqueueWork(com.mengsama.mod.mengsamanetmusic.compat.backpack.BackpackClient::register);

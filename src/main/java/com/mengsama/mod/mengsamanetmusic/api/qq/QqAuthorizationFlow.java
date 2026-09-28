@@ -97,11 +97,11 @@ public final class QqAuthorizationFlow {
         if (verified.status() / 100 != 2 && verified.status() / 100 != 3)
             throw new Failure(LoginError.VERIFICATION_REQUEST_FAILED);
         Map<String, String> cookies = verificationCookies(token, reply, verified);
-        for (String required : List.of("pt2gguin", "pt_oauth_token", "p_skey")) if (cookies.getOrDefault(required, "").isBlank())
+        if (!hasAuthorizationSession(cookies))
             throw new Failure(LoginError.SESSION_COOKIE_MISSING);
         String account = cookies.get("pt2gguin");
         session.phase(token, LoginState.AUTHORIZING);
-        String code = authorize(token, account, cookies.get("pt_oauth_token"), cookies.get("p_skey"));
+        String code = authorize(token, account, cookies.getOrDefault("pt_oauth_token", ""), cookies.getOrDefault("p_skey", ""));
         if (code.isBlank())
             throw new Failure(LoginError.OAUTH_CODE_MISSING);
         session.phase(token, LoginState.LOGGING_IN);
@@ -117,7 +117,7 @@ public final class QqAuthorizationFlow {
 
     private Map<String,String> verificationCookies(long token, QqHttp.Response poll, QqHttp.Response first) throws IOException {
         List<String> headers = new ArrayList<>(poll.values("Set-Cookie"));
-        java.net.CookieManager jar = new java.net.CookieManager(null, java.net.CookiePolicy.ACCEPT_ORIGINAL_SERVER);
+        java.net.CookieManager jar = new java.net.CookieManager(null, QqAuthorizationFlow::acceptSessionCookie);
         jar.put(poll.uri(), poll.headers());
         QqHttp.Response response = first;
         Set<URI> visited = new HashSet<>();
@@ -125,13 +125,24 @@ public final class QqAuthorizationFlow {
             session.require(token);
             headers.addAll(response.values("Set-Cookie"));
             jar.put(response.uri(), response.headers());
-            Map<String,String> values = QqLoginReply.cookies(headers);
+             
+             
+            Map<String,String> values = authorizationCookies(jar);
             if (values.getOrDefault("pt2gguin", "").isBlank()) {
-                String account = values.getOrDefault("p_uin", values.getOrDefault("uin", ""));
-                if (account.matches("o?[0-9]{1,24}")) values.put("pt2gguin", account);
+                for (String alias : List.of("p_uin", "uin")) {
+                    String account = values.getOrDefault(alias, "");
+                    if (account.matches("o?[0-9]{1,24}")) { values.put("pt2gguin", account); break; }
+                }
             }
-            if (List.of("pt2gguin","pt_oauth_token","p_skey").stream().allMatch(k -> !values.getOrDefault(k,"").isBlank())) return values;
-            if (response.status()/100!=3 || response.values("Location").isEmpty()) break;
+            session.cookiePresence(token, values);
+            session.cookieInspection(token, headers);
+            if (List.of("pt2gguin","p_skey").stream().allMatch(k -> !values.getOrDefault(k,"").isBlank())) return values;
+            if (response.status()/100!=3 || response.values("Location").isEmpty()) {
+                 
+                 
+                if (hasAuthorizationSession(values)) return values;
+                break;
+            }
             URI next;
             try { next=response.uri().resolve(response.values("Location").get(0)); }
             catch (IllegalArgumentException invalid) { throw new Failure(LoginError.INVALID_CALLBACK); }
@@ -144,11 +155,40 @@ public final class QqAuthorizationFlow {
         throw new Failure(LoginError.SESSION_COOKIE_MISSING);
     }
 
+    private static Map<String,String> authorizationCookies(java.net.CookieManager jar) throws IOException {
+        URI target = URI.create("https://graph.qq.com/oauth2.0/authorize");
+        Map<String,String> values = new LinkedHashMap<>();
+         
+         
+        for (String header : jar.get(target, Map.of()).getOrDefault("Cookie", List.of())) {
+            for (String pair : header.split(";")) {
+                if (pair.strip().startsWith("$")) continue;
+                try {
+                    for (java.net.HttpCookie cookie : java.net.HttpCookie.parse(pair))
+                        values.putIfAbsent(cookie.getName(), cookie.getValue());
+                } catch (IllegalArgumentException ignored) { }
+            }
+        }
+        return values;
+    }
+
+    private static boolean acceptSessionCookie(URI origin, java.net.HttpCookie cookie) {
+        String host = Objects.requireNonNullElse(origin.getHost(), "").toLowerCase(Locale.ROOT);
+        String domain = Objects.requireNonNullElse(cookie.getDomain(), host).toLowerCase(Locale.ROOT);
+        if (domain.startsWith(".")) domain = domain.substring(1);
+         
+         
+        boolean accepted = (domain.equals("qq.com") || domain.endsWith(".qq.com"))
+                && (host.equals(domain) || host.endsWith("." + domain));
+        if (accepted) cookie.setVersion(0);  
+        return accepted;
+    }
+
     private String authorize(long token, String account, String oauth, String key) throws IOException {
         Map<String, String> fields = new LinkedHashMap<>();
         fields.putAll(Map.of("response_type", "code", "client_id", OAUTH_APP, "redirect_uri", CALLBACK, "scope", "get_user_info", "state", "y_new.top.pop.logout", "switch", "", "from_ptlogin", "1", "src", "1", "update_auth", "1", "openapi", "1010"));
         fields.put("g_tk", Long.toString(QqLoginReply.token(key, 5381)));
-        fields.put("auth_time", Long.toString(clock.instant().getEpochSecond()));
+        fields.put("auth_time", Long.toString(clock.millis()));
         Map<String, String> headers = Map.of("Content-Type", "application/x-www-form-urlencoded", "Cookie", authorizationCookie(account, oauth, key),
                 "User-Agent", QqProtocol.USER_AGENT, "Origin", "https://graph.qq.com", "Referer", JUMP);
         var response = send(token, "OAUTH", QqHttp.Request.post(URI.create("https://graph.qq.com/oauth2.0/authorize"), QqProtocol.form(fields), headers, false));
@@ -171,14 +211,27 @@ public final class QqAuthorizationFlow {
     private QqHttp.Response send(long token, String step, QqHttp.Request request) throws IOException {
         session.require(token);
         session.note(token, step, 0, 0);
-        QqHttp.Response response = http.exchange(request);
+        Map<String,String> headers = new HashMap<>();
+        headers.put("User-Agent", QqProtocol.USER_AGENT);
+        headers.put("Referer", JUMP);
+        headers.putAll(request.headers());
+        QqHttp.Response response = http.exchange(new QqHttp.Request(request.uri(), request.method(),
+                request.body(), headers, request.limit(), request.redirects()));
         session.require(token);
         session.note(token, step, response.status(), response.body().length);
+        session.diagnostic(token, QqLoginDiagnostics.response(response));
         return response;
     }
 
     public static String authorizationCookie(String account, String token, String key) {
-        return "p_uin=" + account + "; pt_oauth_token=" + token + "; p_skey=" + key;
+        return "p_uin=" + account + (token == null || token.isBlank() ? "" : "; pt_oauth_token=" + token)
+                + (key == null || key.isBlank() ? "" : "; p_skey=" + key);
+    }
+
+    private static boolean hasAuthorizationSession(Map<String,String> cookies) {
+        return !cookies.getOrDefault("pt2gguin", "").isBlank()
+                && (!cookies.getOrDefault("p_skey", "").isBlank()
+                || !cookies.getOrDefault("pt_oauth_token", "").isBlank());
     }
 
     public static boolean safeVerification(URI target) {

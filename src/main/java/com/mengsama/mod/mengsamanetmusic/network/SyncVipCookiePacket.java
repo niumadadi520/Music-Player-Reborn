@@ -1,7 +1,7 @@
 package com.mengsama.mod.mengsamanetmusic.network;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import com.mengsama.mod.mengsamanetmusic.platform.PacketContext;
 
 import java.util.function.Supplier;
 
@@ -22,7 +22,7 @@ public class SyncVipCookiePacket {
         buf.writeBoolean(message.hasServerVipCookie);
     }
 
-    public static void handle(SyncVipCookiePacket message, Supplier<NetworkEvent.Context> contextSupplier) {
+    public static void handle(SyncVipCookiePacket message, Supplier<PacketContext> contextSupplier) {
         ClientPacketDispatch.accept(contextSupplier, () -> CLIENT_HAS_VIP_COOKIE = message.hasServerVipCookie);
     }
 

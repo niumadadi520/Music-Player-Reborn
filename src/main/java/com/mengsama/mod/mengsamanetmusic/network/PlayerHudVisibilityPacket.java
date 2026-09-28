@@ -4,9 +4,9 @@ import com.mengsama.mod.mengsamanetmusic.client.audio.ClientMusicPlayback;
 import com.mengsama.mod.mengsamanetmusic.hud.MusicInfoHud;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import com.mengsama.mod.mengsamanetmusic.platform.PacketContext;
 
 import java.util.function.Supplier;
 
@@ -21,7 +21,7 @@ public record PlayerHudVisibilityPacket(String targetId, boolean visible) {
         return new PlayerHudVisibilityPacket(buf.readUtf(), buf.readBoolean());
     }
 
-    public static void handle(PlayerHudVisibilityPacket packet, Supplier<NetworkEvent.Context> contextSupplier) {
+    public static void handle(PlayerHudVisibilityPacket packet, Supplier<PacketContext> contextSupplier) {
         ClientPacketDispatch.accept(contextSupplier, () -> handleClient(packet));
     }
 

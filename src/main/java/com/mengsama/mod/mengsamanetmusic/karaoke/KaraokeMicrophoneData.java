@@ -1,11 +1,12 @@
 package com.mengsama.mod.mengsamanetmusic.karaoke;
 
+import com.mengsama.mod.mengsamanetmusic.platform.ItemData;
 import com.mengsama.mod.mengsamanetmusic.item.MusicPlayerItem;
 import com.mengsama.mod.mengsamanetmusic.util.PlayMode;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
 
 import java.util.UUID;
 
@@ -22,26 +23,26 @@ public final class KaraokeMicrophoneData {
     }
 
     public static NonNullList<ItemStack> playlist(ItemStack stack) {
-        if (stack.getTagElement("Item") != null) return MusicPlayerItem.loadAllCds(stack);
+        if (ItemData.child(stack, "Item") != null) return MusicPlayerItem.loadAllCds(stack);
          
         NonNullList<ItemStack> items = NonNullList.withSize(54, ItemStack.EMPTY);
-        CompoundTag tag = stack.getTagElement("KaraokeBlockData");
+        CompoundTag tag = ItemData.child(stack, "KaraokeBlockData");
         if (tag != null) for (var entry : tag.getCompound("ItemStacksCD").getList("Items", 10)) {
             CompoundTag item = (CompoundTag) entry;
             int slot = item.getInt("Slot");
-            if (slot >= 0 && slot < items.size()) items.set(slot, ItemStack.of(item));
+            if (slot >= 0 && slot < items.size()) items.set(slot, com.mengsama.mod.mengsamanetmusic.platform.StoredItems.read(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup(), item));
         }
         return items;
     }
 
     public static int playIndex(ItemStack stack) {
-        return stack.hasTag() && stack.getTag().contains("PlayIndex", 99) ? MusicPlayerItem.getPlayIndex(stack)
-                : stack.getTagElement("KaraokeBlockData") == null ? 0 : stack.getTagElement("KaraokeBlockData").getInt("PlayIndex");
+        return ItemData.has(stack) && ItemData.nullable(stack).contains("PlayIndex", 99) ? MusicPlayerItem.getPlayIndex(stack)
+                : ItemData.child(stack, "KaraokeBlockData") == null ? 0 : ItemData.child(stack, "KaraokeBlockData").getInt("PlayIndex");
     }
     public static PlayMode playMode(ItemStack stack) {
-        return stack.hasTag() && stack.getTag().contains("PlayMode", 99) ? MusicPlayerItem.getPlayMode(stack)
-                : stack.getTagElement("KaraokeBlockData") == null ? PlayMode.SEQUENTIAL
-                : PlayMode.getMode(stack.getTagElement("KaraokeBlockData").getInt("PlayMode"));
+        return ItemData.has(stack) && ItemData.nullable(stack).contains("PlayMode", 99) ? MusicPlayerItem.getPlayMode(stack)
+                : ItemData.child(stack, "KaraokeBlockData") == null ? PlayMode.SEQUENTIAL
+                : PlayMode.getMode(ItemData.child(stack, "KaraokeBlockData").getInt("PlayMode"));
     }
 
     public static ItemStack snapshot(ItemStack template, UUID id, ItemStackHandler inventory, int selected, PlayMode mode) {
@@ -59,7 +60,7 @@ public final class KaraokeMicrophoneData {
         MusicPlayerItem.setPlay(result, false);
         MusicPlayerItem.setPaused(result, false);
         MusicPlayerItem.setCurrentTime(result, 0);
-        CompoundTag root = result.getOrCreateTag();
+        CompoundTag root = ItemData.get(result);
         root.remove("AutoAdvanceArmed");
         root.remove("KaraokeRuntimeActive");
         root.remove("KaraokeVoiceUntil");
@@ -70,7 +71,7 @@ public final class KaraokeMicrophoneData {
             var items = MusicPlayerItem.loadAllCds(result);
             for (int i = 0; i < 54; i++) packed.setStackInSlot(i, items.get(i).copy());
             CompoundTag inventoryTag = legacy.getCompound("ItemStacksCD").copy();
-            inventoryTag.merge(packed.serializeNBT());
+            inventoryTag.merge(packed.serializeNBT(com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup()));
             legacy.put("ItemStacksCD", inventoryTag);
             legacy.putInt("PlayIndex", compact);
             legacy.putInt("PlayMode", mode.ordinal());
@@ -80,6 +81,7 @@ public final class KaraokeMicrophoneData {
             if (id != null) legacy.putUUID("KaraokeDeviceId", id);
             root.put("KaraokeBlockData", legacy);
         }
+        ItemData.set(result, root);
         return result;
     }
 
@@ -87,14 +89,15 @@ public final class KaraokeMicrophoneData {
     public static ItemStack standOnly(ItemStack source) {
         if (source.isEmpty()) return ItemStack.EMPTY;
         ItemStack result = source.copy(); result.setCount(1);
-        if (result.hasTag()) {
-            CompoundTag tag = result.getTag();
+        if (ItemData.has(result)) {
+            CompoundTag tag = ItemData.nullable(result);
             for (String key : DEVICE_KEYS) tag.remove(key);
             for (String nested : new String[]{"KaraokeBlockData", "BlockEntityTag"}) if (tag.contains(nested, 10)) {
                 CompoundTag clean = tag.getCompound(nested).copy();
                 for (String key : DEVICE_KEYS) clean.remove(key);
                 if (clean.isEmpty()) tag.remove(nested); else tag.put(nested, clean);
             }
+            ItemData.set(result, tag);
         }
         return result;
     }

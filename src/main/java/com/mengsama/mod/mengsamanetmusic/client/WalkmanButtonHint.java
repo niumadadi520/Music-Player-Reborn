@@ -1,17 +1,18 @@
 package com.mengsama.mod.mengsamanetmusic.client;
 
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.mengsama.mod.mengsamanetmusic.MengSamaNetMusic;
 import com.mengsama.mod.mengsamanetmusic.block.PortableMusicPlayerBlock;
 import com.mengsama.mod.mengsamanetmusic.block.WalkmanControl;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderGuiEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.event.RenderGuiEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 
-@Mod.EventBusSubscriber(modid = MengSamaNetMusic.MOD_ID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = MengSamaNetMusic.MOD_ID, value = Dist.CLIENT)
 public final class WalkmanButtonHint {
     @SubscribeEvent public static void render(RenderGuiEvent.Post event) {
         var mc = Minecraft.getInstance();

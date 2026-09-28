@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.UUID;
 
  
-public final class KaraokeSettingsScreen extends Screen {
+public final class KaraokeSettingsScreen extends com.mengsama.mod.mengsamanetmusic.gui.ThemedOverlayScreen {
     private final AbstractContainerScreen<?> parent;
     private final int containerId;
     private KaraokeState state;
@@ -191,7 +191,7 @@ public final class KaraokeSettingsScreen extends Screen {
 
     @Override public void tick() {
         if (!validMenu()) { if (minecraft != null) minecraft.setScreen(null); return; }
-        if (code != null) code.tick();
+        if (code != null) {}
         if (localMessageTicks > 0) localMessageTicks--;
         if (serverMessageTicks > 0) serverMessageTicks--;
         if (volume != null) volume.tick();
@@ -202,7 +202,7 @@ public final class KaraokeSettingsScreen extends Screen {
 
     @Override public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         hoveredConnection = null;
-        renderBackground(g);
+        renderTransparentBackground(g);
         KaraokeSkin.panel(g, layout);
         String title = state == null ? "K歌 · 设备设置" : switch (state.kind()) {
             case HANDHELD -> "K歌 · 手持麦克风";
@@ -328,7 +328,7 @@ public final class KaraokeSettingsScreen extends Screen {
         void flush() {
             if (dirty) { dirty = false; send(KaraokeNetwork.Action.SET_VOLUME, Integer.toString(percent())); }
         }
-        @Override public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+        @Override public boolean mouseScrolled(double mouseX, double mouseY, double horizontal, double delta) {
             if (!active || !visible || !isMouseOver(mouseX, mouseY) || delta == 0) return false;
             value = Math.max(0, Math.min(1, value + (delta > 0 ? .01 : -.01)));
             applyValue();

@@ -15,22 +15,25 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.*;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.*;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.*;
+import net.neoforged.neoforge.items.*;
 import java.util.concurrent.ThreadLocalRandom;
 
  
 public abstract class MusicDeviceEntity extends BlockEntity implements IMusicPlayerBlockEntity {
     protected final DevicePlaylist playlist = new DevicePlaylist(this::markDirty);
     private final DevicePlaybackClock clock = new DevicePlaybackClock();
-    private LazyOptional<IItemHandler> inventoryView;
     private volatile long request;
     protected MusicDeviceEntity(BlockEntityType<?> type, BlockPos position, BlockState state) { super(type, position, state); }
 
-    @Override public void load(CompoundTag data) { super.load(data); playlist.read(data); clock.read(data); }
-    @Override public void saveAdditional(CompoundTag data) { super.saveAdditional(data); playlist.write(data); clock.write(data); }
-    @Override public CompoundTag getUpdateTag() { return saveWithoutMetadata(); }
+    @Override public void setBlockState(BlockState state) {
+        super.setBlockState(state);
+        invalidateCapabilities();
+    }
+    public net.minecraft.world.phys.AABB getRenderBoundingBox() { return new net.minecraft.world.phys.AABB(worldPosition); }
+
+    @Override public void loadAdditional(CompoundTag data, net.minecraft.core.HolderLookup.Provider registries) { super.loadAdditional(data, registries); playlist.read(data, registries); clock.read(data); }
+    @Override public void saveAdditional(CompoundTag data, net.minecraft.core.HolderLookup.Provider registries) { super.saveAdditional(data, registries); playlist.write(data, registries); clock.write(data); }
+    @Override public CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider registries) { return saveWithoutMetadata(registries); }
     @Override public ClientboundBlockEntityDataPacket getUpdatePacket() { return ClientboundBlockEntityDataPacket.create(this); }
     @Override public ItemStackHandler getPlayerInv() { return playlist.inventory(); }
     @Override public ItemStack getCurrentCd() { return playlist.current(); }
@@ -126,16 +129,7 @@ public abstract class MusicDeviceEntity extends BlockEntity implements IMusicPla
         level.sendBlockUpdated(worldPosition, state, state, Block.UPDATE_ALL);
     }
 
-    private void releaseInventoryView() {
-        LazyOptional<IItemHandler> previous = inventoryView;
-        inventoryView = null;
-        if (previous != null) previous.invalidate();
-    }
-    @Override public <T> LazyOptional<T> getCapability(Capability<T> capability, Direction side) {
-        if (capability != ForgeCapabilities.ITEM_HANDLER || isRemoved()) return super.getCapability(capability, side);
-        if (inventoryView == null) inventoryView = LazyOptional.of(playlist::inventory);
-        return inventoryView.cast();
-    }
-    @Override public void invalidateCaps() { releaseInventoryView(); super.invalidateCaps(); }
-    @Override public void setBlockState(BlockState state) { releaseInventoryView(); super.setBlockState(state); }
+    public IItemHandler automationInventory() { return isRemoved() ? null : getPlayerInv(); }
+    public void load(CompoundTag data) { loadAdditional(data,com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup()); }
+    public void saveAdditional(CompoundTag data) { saveAdditional(data,com.mengsama.mod.mengsamanetmusic.platform.GameRegistries.lookup()); }
 }

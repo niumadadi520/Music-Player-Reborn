@@ -1,5 +1,6 @@
 package com.mengsama.mod.mengsamanetmusic.karaoke.client;
 
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.mengsama.mod.mengsamanetmusic.MengSamaNetMusic;
 import com.mengsama.mod.mengsamanetmusic.config.MusicPlayerUiConfig;
 import com.mengsama.mod.mengsamanetmusic.gui.MusicPlayerPlaylistScreen;
@@ -13,16 +14,17 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
-import net.minecraftforge.client.event.RenderGuiEvent;
-import net.minecraftforge.client.event.ScreenEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.event.RenderGuiEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.neoforged.neoforge.event.tick.*;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 
  
-@Mod.EventBusSubscriber(modid = MengSamaNetMusic.MOD_ID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = MengSamaNetMusic.MOD_ID, value = Dist.CLIENT)
 public final class KaraokeUi {
     private static KaraokeState state;
     private static KaraokeState serverState;
@@ -83,8 +85,8 @@ public final class KaraokeUi {
     }
 
      
-    @SubscribeEvent public static void tick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
+    @SubscribeEvent public static void tick(ClientTickEvent.Post event) {
+        
         if (noticeTicks > 0) noticeTicks--;
         if (serverState == null) return;
         var mc = Minecraft.getInstance();
