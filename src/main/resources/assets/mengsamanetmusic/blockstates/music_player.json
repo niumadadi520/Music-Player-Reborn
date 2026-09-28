@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "mengsamanetmusic:block/music_player"
+    },
+    "facing=south": {
+      "model": "mengsamanetmusic:block/music_player",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "mengsamanetmusic:block/music_player",
+      "y": 270
+    },
+    "facing=east": {
+      "model": "mengsamanetmusic:block/music_player",
+      "y": 90
+    }
+  }
+}

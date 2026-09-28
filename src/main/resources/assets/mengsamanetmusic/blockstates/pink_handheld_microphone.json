@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "mengsamanetmusic:block/pink_handheld_microphone"
+    },
+    "facing=east": {
+      "model": "mengsamanetmusic:block/pink_handheld_microphone",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "mengsamanetmusic:block/pink_handheld_microphone",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "mengsamanetmusic:block/pink_handheld_microphone",
+      "y": 270
+    }
+  }
+}

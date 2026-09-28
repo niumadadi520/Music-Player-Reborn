@@ -1,0 +1,97 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.pink_speaker.idle": {
+      "loop": true,
+      "animation_length": 1,
+      "bones": {
+        "root": {
+          "rotation": [
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.pink_speaker.playing": {
+      "loop": true,
+      "animation_length": 0.6,
+      "bones": {
+        "speaker_cone": {
+          "position": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.15": [
+              0,
+              0,
+              -0.045
+            ],
+            "0.3": [
+              0,
+              0,
+              0
+            ],
+            "0.45": [
+              0,
+              0,
+              -0.045
+            ],
+            "0.6": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "status_light": {
+          "scale": {
+            "0.0": [
+              1,
+              1,
+              1
+            ],
+            "0.3": [
+              1.16,
+              1.16,
+              1.16
+            ],
+            "0.6": [
+              1,
+              1,
+              1
+            ]
+          }
+        }
+      }
+    },
+    "animation.pink_speaker.volume_turn": {
+      "loop": false,
+      "animation_length": 0.3,
+      "bones": {
+        "volume_knob": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.15": [
+              0,
+              0,
+              -35
+            ],
+            "0.3": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    }
+  }
+}

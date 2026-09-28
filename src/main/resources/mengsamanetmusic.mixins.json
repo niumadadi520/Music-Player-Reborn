@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.mengsama.mod.mengsamanetmusic.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "mengsamanetmusic.refmap.json",
+  "mixins": [],
+  "client": [
+    "SoundEngineAccessorMixin",
+    "SoundManagerAccessorMixin",
+    "DeviceAudioResumeMixin",
+    "BackpackCharmLayerMixin",
+    "EarbudArmMixin"
+  ],
+  "server": [],
+  "plugin": "com.mengsama.mod.mengsamanetmusic.mixin.BackpackMixinPlugin"
+}

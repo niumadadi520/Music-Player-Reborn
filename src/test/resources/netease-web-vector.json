@@ -1,0 +1,6 @@
+{
+  "key": "a1B2c3D4e5F6g7H8",
+  "json": "{\"type\":1,\"key\":\"test_key_123456\",\"csrf_token\":\"test-csrf\",\"label\":\"测试\"}",
+  "params": "vHvNRHLNZ3dkEi0zUnclwfFFnllmWfDg+K5MBLAENC2b/KWvnFd1IQbExT93bHir/0uj/ZmOUBZTUb4TDSYxViutMiUJjs9cw+nTYUCNRmWEHzkWu6FOwBGFGg9/hMLG6D05rDzAs1apVc8bVwD4fw==",
+  "encSecKey": "6615842a2f8ce26ba9faafa041b4cfb5f2a13c8c310cd67fb74033f634a0720910cd511b3779d13e8cef5cf6d79e5105172e1a1a4a4a670b3d38ba682fdc2f1121c5c0a7405e4e2483d2d4d1b42c8b2243bffaa8ea672f7528e8b2335eacacc65bdfb1d04ff7a96555098aedd460386024b4186f98c81d235f6996b5256d103b"
+}

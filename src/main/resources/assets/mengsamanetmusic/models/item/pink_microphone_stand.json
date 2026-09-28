@@ -1,0 +1,128 @@
+{
+  "parent": "builtin/entity",
+  "gui_light": "side",
+  "textures": {
+    "particle": "mengsamanetmusic:block/pink_microphone_stand"
+  },
+  "display": {
+    "gui": {
+      "rotation": [
+        20,
+        155,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.56,
+        0.56,
+        0.56
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        155,
+        -8
+      ],
+      "translation": [
+        -2,
+        3,
+        -2
+      ],
+      "scale": [
+        0.3472,
+        0.3472,
+        0.3472
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        205,
+        8
+      ],
+      "translation": [
+        -2,
+        3,
+        -2
+      ],
+      "scale": [
+        0.3472,
+        0.3472,
+        0.3472
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        65,
+        -25,
+        0
+      ],
+      "translation": [
+        0,
+        1,
+        0
+      ],
+      "scale": [
+        0.36400000000000005,
+        0.36400000000000005,
+        0.36400000000000005
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        65,
+        25,
+        0
+      ],
+      "translation": [
+        0,
+        1,
+        0
+      ],
+      "scale": [
+        0.36400000000000005,
+        0.36400000000000005,
+        0.36400000000000005
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "translation": [
+        0,
+        3,
+        0
+      ],
+      "scale": [
+        0.336,
+        0.336,
+        0.336
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.5040000000000001,
+        0.5040000000000001,
+        0.5040000000000001
+      ]
+    }
+  }
+}

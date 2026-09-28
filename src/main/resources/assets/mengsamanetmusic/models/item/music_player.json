@@ -1,0 +1,128 @@
+{
+  "parent": "builtin/entity",
+  "gui_light": "side",
+  "textures": {
+    "particle": "mengsamanetmusic:block/pink_walkman"
+  },
+  "display": {
+    "gui": {
+      "rotation": [
+        20,
+        155,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1.05,
+        1.05,
+        1.05
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        155,
+        -8
+      ],
+      "translation": [
+        -3,
+        3,
+        -2
+      ],
+      "scale": [
+        0.578,
+        0.578,
+        0.578
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        205,
+        8
+      ],
+      "translation": [
+        -3,
+        3,
+        -2
+      ],
+      "scale": [
+        0.578,
+        0.578,
+        0.578
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        65,
+        -25,
+        0
+      ],
+      "translation": [
+        0,
+        1,
+        0
+      ],
+      "scale": [
+        0.578,
+        0.578,
+        0.578
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        65,
+        25,
+        0
+      ],
+      "translation": [
+        0,
+        1,
+        0
+      ],
+      "scale": [
+        0.578,
+        0.578,
+        0.578
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "translation": [
+        0,
+        3,
+        0
+      ],
+      "scale": [
+        0.525,
+        0.525,
+        0.525
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.892,
+        0.892,
+        0.892
+      ]
+    }
+  }
+}

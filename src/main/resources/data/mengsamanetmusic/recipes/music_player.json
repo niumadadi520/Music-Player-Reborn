@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "result": {
+    "item": "mengsamanetmusic:music_player_block"
+  },
+  "pattern": [
+    "  G",
+    " IN",
+    "CCC"
+  ],
+  "key": {
+    "G": {
+      "tag": "forge:ingots/gold"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "N": {
+      "item": "minecraft:note_block"
+    },
+    "C": {
+      "tag": "forge:ingots/copper"
+    }
+  }
+}

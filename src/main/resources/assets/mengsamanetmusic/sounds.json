@@ -1,0 +1,12 @@
+{
+  "net_music": {
+    "category": "record",
+    "subtitle": "subtitle.mengsamanetmusic.block.music_player",
+    "sounds": [
+      {
+        "name": "random/orb",
+        "stream": true
+      }
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.pink_bluetooth_transfer_piece_left.idle": {
+      "loop": true,
+      "animation_length": 1,
+      "bones": {}
+    }
+  }
+}

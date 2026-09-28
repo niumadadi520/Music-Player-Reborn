@@ -1,0 +1,163 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.pink_wired_display_both.idle": {
+      "loop": true,
+      "animation_length": 1,
+      "bones": {
+        "root": {
+          "rotation": {
+            "0": [
+              0,
+              0,
+              0
+            ],
+            "1": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.pink_wired_display_both.play": {
+      "loop": true,
+      "animation_length": 2,
+      "bones": {
+        "reel_left": {
+          "rotation": {
+            "0": [
+              0,
+              0,
+              0
+            ],
+            "1": [
+              0,
+              0,
+              -180
+            ],
+            "2": [
+              0,
+              0,
+              -360
+            ]
+          }
+        },
+        "reel_right": {
+          "rotation": {
+            "0": [
+              0,
+              0,
+              0
+            ],
+            "1": [
+              0,
+              0,
+              -180
+            ],
+            "2": [
+              0,
+              0,
+              -360
+            ]
+          }
+        },
+        "button_play": {
+          "position": {
+            "0": [
+              0,
+              0,
+              0.11
+            ],
+            "2": [
+              0,
+              0,
+              0.11
+            ]
+          }
+        }
+      }
+    },
+    "animation.pink_wired_display_both.previous_track": {
+      "loop": false,
+      "animation_length": 0.3,
+      "bones": {
+        "button_rewind": {
+          "position": {
+            "0": [
+              0,
+              0,
+              0
+            ],
+            "0.05": [
+              0,
+              0,
+              0.12
+            ],
+            "0.1": [
+              0,
+              0,
+              0.2
+            ],
+            "0.15": [
+              0,
+              0,
+              0.2
+            ],
+            "0.25": [
+              0,
+              0,
+              0.04
+            ],
+            "0.3": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.pink_wired_display_both.next_track": {
+      "loop": false,
+      "animation_length": 0.3,
+      "bones": {
+        "button_stop": {
+          "position": {
+            "0": [
+              0,
+              0,
+              0
+            ],
+            "0.05": [
+              0,
+              0,
+              0.12
+            ],
+            "0.1": [
+              0,
+              0,
+              0.2
+            ],
+            "0.15": [
+              0,
+              0,
+              0.2
+            ],
+            "0.25": [
+              0,
+              0,
+              0.04
+            ],
+            "0.3": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    }
+  }
+}
